@@ -1,0 +1,19 @@
+{
+  "name": "insta-fetcher",
+  "version": "1.0.0",
+  "description": "Scrape Instagram meta data like media urls, caption, bio, etc.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "instagram-scraper",
+    "instagram-downloader",
+    "instagram-saver"
+  ],
+  "author": "Muhamad Ristiyanto <agaaja187@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.21.1"
+  }
+}
