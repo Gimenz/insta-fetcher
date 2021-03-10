@@ -6,6 +6,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Gimenz/insta-fetcher.git"
+  },
   "keywords": [
     "instagram-scraper",
     "instagram-downloader",
@@ -13,6 +17,10 @@
   ],
   "author": "Muhamad Ristiyanto <agaaja187@gmail.com>",
   "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Gimenz/insta-fetcher/issues"
+  },
+  "homepage": "https://github.com/Gimenz/insta-fetcher",
   "dependencies": {
     "axios": "^0.21.1"
   }
