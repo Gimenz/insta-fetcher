@@ -70,7 +70,7 @@ ig.fetchUser('mg.creativestudio').then(res => {
   is_private: false,
   is_verified: false,
   profile_pic_url_hd: 'https://instagram.fjog3-1.fna.fbcdn.net/v/t51.2885-19/s320x320/94093462_2387995234825154_6853923121787830272_n.jpg?tp=1&_nc_ht=instagram.fjog3-1.fna.fbcdn.net&_nc_cat=102&_nc_ohc=UUHxLCjUciAAX8o8g9Y&oh=ee7bc4973602826d6c66bff56c692f84&oe=60723309',
-  posts: [Array] 
+  posts: [Array]
   } */
 })
 ```
