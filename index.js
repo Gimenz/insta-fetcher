@@ -13,7 +13,7 @@ async function fetchPost(url, sessionId = '' ) {
   try {
     const regex = new RegExp(/^(?:https?:\/\/)?(?:www\.)?(?:instagram\.com.*\/p\/)([\d\w\-_]+)(?:\/)?(\?.*)?$/gi);
     if (!regex.test(url)) return ({error: true, message: 'invalid url'});
-    const media_id = regex.exec(url)[1];
+    const media_id = /^(?:https?:\/\/)?(?:www\.)?(?:instagram\.com.*\/p\/)([\d\w\-_]+)(?:\/)?(\?.*)?$/gi.exec(url)[1];
     const fullURL = 'https://www.instagram.com/p/' + media_id + '/?__a=1';
     const opt = {
       headers: {
