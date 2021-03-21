@@ -121,7 +121,7 @@ async function fetchUser(username, sessionId = '') {
       is_private: metaData.is_private,
       is_verified: metaData.is_verified,
       profile_pic_url_hd: metaData.profile_pic_url_hd,
-      posts: metaData.edge_owner_to_timeline_media.edges.map(x => x.node)
+      posts: metaData.edge_owner_to_timeline_media.edges.map(x => 'https://www.instagram.com/' + x.node.shortcode)
     };
     return final;
   } catch (e) {
