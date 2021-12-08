@@ -1,6 +1,6 @@
 {
   "name": "insta-fetcher",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "Scrape Instagram meta data like media urls, caption, bio, etc.",
   "main": "src/index.js",
   "scripts": {
