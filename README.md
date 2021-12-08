@@ -33,17 +33,16 @@ const ig = require('insta-fetcher');
 
 // Public post
 ig.fetchPost('https://www.instagram.com/p/CMBZUsMALA_/').then(res => {
-	console.log(res);
-	
+   console.log(res);
 })
 // User data
 ig.fetchUser('mg.creativestudio').then(res => {
- 	console.log(res);
+   console.log(res);
 })
 
 // Fetch stories
 ig.fetchStories('adiraas.p').then(res => {
- 	console.log(res);
+   console.log(res);
 })
 ```
 
