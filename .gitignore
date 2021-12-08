@@ -1,2 +1,3 @@
 # Dependency directories
 node_modules/
+src/config/Cookies.json

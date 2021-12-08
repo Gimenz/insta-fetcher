@@ -1,8 +1,8 @@
 {
   "name": "insta-fetcher",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "Scrape Instagram meta data like media urls, caption, bio, etc.",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -22,6 +22,6 @@
   },
   "homepage": "https://github.com/Gimenz/insta-fetcher",
   "dependencies": {
-    "axios": "^0.21.1"
+    "axios": "^0.21.4"
   }
 }
