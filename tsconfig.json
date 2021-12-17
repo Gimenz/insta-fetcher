@@ -2,8 +2,8 @@
 	"compilerOptions": {
 		"target": "es2016",
 		"module": "commonjs",
-		"rootDir": "./src",
-		"baseUrl": ".",
+		"rootDir": "src",
+		"baseUrl": "src",
 		"declaration": true,
 		"outDir": "./dist",
 		"esModuleInterop": true,
@@ -12,6 +12,6 @@
 		"skipLibCheck": true,
 		"typeRoots": ["./node_modules/@types"]
 	},
-	"include": ["src"],
+	"include": ["src/**/*.*"],
 	"exclude": ["node_modules"]
 }
