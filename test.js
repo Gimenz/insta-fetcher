@@ -1,16 +1,15 @@
-const ig = require('./');
+const { igApi } = require('./dist');
+const ig = new igApi('763572655%gustikulo%3A13');
+ig.fetchUser('gimenz.id').then((res) => console.log(res));
 
-// ig.fetchPost('https://www.instagram.com/p/CXOZbFrPfO-/?utm_source=ig_web_copy_link').then(res => {
-//   console.log(res);
-// })
+// ig.fetchPost('https://www.instagram.com/tv/B3OFKpkg4wH/')
+// 	.then((res) => {
+// 		console.log(res);
+// 	})
+// 	.catch((e) => console.log(e));
 
-// recommended to set cookie first for call most all instagram endpoint
-//setCookie("45383374294%3AXmvVAsMceyYZ2S7%3A16")
-
-ig.fetchUser('adiraas.p').then(res => {
-  console.log(res);
-})
-
-// ig.explore('natgeo').then(res => {
-//   console.log(res);
-// })
+// ig.fetchStories('adiraas.p')
+// 	.then((res) => {
+// 		console.log(res);
+// 	})
+// 	.catch((e) => console.log(e));

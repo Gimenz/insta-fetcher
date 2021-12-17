@@ -1,8 +1,8 @@
 {
 	"name": "insta-fetcher",
-	"version": "1.2.6",
+	"version": "1.2.7",
 	"description": "Simplified Instagram metadata scraping",
-	"main": "dist/src/index.js",
+	"main": "dist/index.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"build": "tsc",

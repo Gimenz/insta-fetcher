@@ -15,7 +15,6 @@ import {
 	ItemStories,
 	StoriesGraphQL,
 } from './types/StoriesMetadata';
-import { writeFileSync } from 'fs';
 const cookie = new CookieHandler();
 
 export class igApi {
