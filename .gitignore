@@ -1,3 +1,6 @@
-# Dependency directories
-node_modules/
-src/config/Cookies.json
+node_modules
+meta.json
+stories_meta.json
+stories.json
+user.json
+dist
