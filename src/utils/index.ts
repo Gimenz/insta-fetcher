@@ -9,7 +9,7 @@ export const shortcodeFormatter = (url: string) => {
     // const [, shortcode] = Regex.exec(url) || '';
     // return shortcode;
 
-    const re = new RegExp(/(?:https?:\/\/)?(?:www\.)?(?:instagram\.com(?:\/\w+)?\/(p|reel|tv)\/)([\w-]+)(?:\/)?(\?.*)?.+$/, 'g').exec(url) || '';
+    const re = new RegExp(/(?:https?:\/\/)?(?:www\.)?(?:instagram\.com(?:\/\w+)?\/(p|reel|tv)\/)([\w-]+)(?:\/)?(\?.*)?.*?$/, 'g').exec(url) || '';
     return {
         type: re[1],
         shortcode: re[2]
