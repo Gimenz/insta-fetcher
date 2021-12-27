@@ -106,20 +106,21 @@ export class igApi {
 	 */
 	async fetchPost(url: url): Promise<IGPostMetadata> {
 		try {
-			const shortcode = shortcodeFormatter(url);
-			const graphql: PostGraphQL = (await IGFetch.get(`/p/${shortcode}/?__a=1`))
+			const post = shortcodeFormatter(url);
+			const graphql: PostGraphQL = (await IGFetch.get(`/${post.type}/${post.shortcode}/?__a=1`))
 				.data.graphql;
 			const metaData = graphql.shortcode_media;
+		
 			return {
 				username: metaData.owner.username,
 				name: metaData.owner.full_name,
-				id: metaData.id,
+				media_id: metaData.id,
 				shortcode: metaData.shortcode,
 				taken_at_timestamp: metaData.taken_at_timestamp,
 				likes: metaData.edge_media_preview_like.count,
-				caption: metaData.edge_media_to_caption.edges[0].node.text
+				caption: metaData.edge_media_to_caption.edges.length >= 1
 					? metaData.edge_media_to_caption.edges[0].node.text
-					: '-',
+					: '',
 				media_count:
 					metaData.__typename == 'GraphSidecar'
 						? metaData.edge_sidecar_to_children.edges.length

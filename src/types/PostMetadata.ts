@@ -6,7 +6,7 @@ export interface IGPostMetadata {
 	/** Instagram Full Name */
 	name: string;
 	/** media id */
-	id: string;
+	media_id: string;
 	/** post shortcode */
 	shortcode: string;
 	/** a timestamp of posted media */
