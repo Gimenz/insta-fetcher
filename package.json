@@ -1,12 +1,14 @@
 {
 	"name": "insta-fetcher",
-	"version": "1.2.9",
+	"version": "1.2.92",
 	"description": "Simplified Instagram metadata scraping",
 	"main": "./dist/index.js",
 	"scripts": {
 		"test": "jest --config jestconfig.json",
 		"build": "tsc",
-		"start": "tsc && node dist/index.js"
+		"start": "tsc && node dist/index.js",
+		"prepare": "npm run build-ts",
+		"build-ts": "tsc"
 	},
 	"files": [
 		"dist"

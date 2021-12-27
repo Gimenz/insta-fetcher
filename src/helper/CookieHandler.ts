@@ -16,9 +16,7 @@ export class CookieHandler {
 		if (!fs.existsSync(DIR)) {
 			fs.writeFileSync(DIR, JSON.stringify(session_id));
 		} else {
-			throw new Error(
-				'Cookie has been saved before, use update() to update with new cookie'
-			);
+			this.update(session_id)
 		}
 	}
 
@@ -42,11 +40,12 @@ export class CookieHandler {
 	 * @returns {boolean} true if file has stored in local dir
 	 */
 	check(): boolean {
-		if (fs.existsSync(DIR)) {
-			return false;
-		} else {
-			return true;
-		}
+		return fs.existsSync(DIR);
+		// if (fs.existsSync(DIR)) {
+		// 	return false;
+		// } else {
+		// 	return true;
+		// }
 	}
 
 	/**

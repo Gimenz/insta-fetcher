@@ -16,7 +16,7 @@ Fetch instagram metadata with full details and simplified json metadata
 
 - [ ] explore
 
-- [ ] fetchHighlights
+- [x] fetchHighlights
 
 - [ ] fetchTV
 

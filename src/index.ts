@@ -4,9 +4,9 @@
  */
 
 import { shortcodeFormatter } from './utils';
-import { IGFetch, IGUser, IGStories } from './helper/RequestHandler';
+import { IGFetch, IGUser, IGStories, IGHighlight } from './helper/RequestHandler';
 import { CookieHandler } from './helper/CookieHandler';
-import { username, url, session_id } from './types';
+import { username, url, session_id, MimeType } from './types';
 import { IGPostMetadata, links, PostGraphQL } from './types/PostMetadata';
 import { IGUserMetadata, UserGraphQL } from './types/UserMetadata';
 import {
@@ -15,6 +15,9 @@ import {
 	ItemStories,
 	StoriesGraphQL,
 } from './types/StoriesMetadata';
+import { highlight_ids_query, highlight_media_query } from './helper/query';
+import { HightlighGraphQL, ReelsIds } from './types/HighlightMetadata';
+import { HMedia, IHighlightsMetadata, IReelsMetadata, ReelsMediaData } from './types/HighlightMediaMetadata';
 const cookie = new CookieHandler();
 
 export class igApi {
@@ -30,7 +33,7 @@ export class igApi {
 	 */
 	setCookie(session_id: session_id = this.session_id) {
 		try {
-			if (cookie.check()) {
+			if (!cookie.check()) {
 				cookie.save(session_id);
 			} else {
 				cookie.update(session_id);
@@ -45,7 +48,7 @@ export class igApi {
 	 * @param {username} username
 	 * @returns
 	 */
-	async getIdByUsername(username: username): Promise<Number> {
+	async getIdByUsername(username: username): Promise<string> {
 		try {
 			const { data } = await IGFetch.get(`/${username}/?__a=1`);
 			return data.graphql.user.id;
@@ -73,37 +76,25 @@ export class igApi {
 		const graphql = metadata.shortcode_media;
 		let links: links[] = [];
 		if (graphql.__typename == 'GraphSidecar') {
-			for (let i = 0; i < graphql.edge_sidecar_to_children.edges.length; i++) {
-				if (
-					graphql.edge_sidecar_to_children.edges[i].__typename == 'GraphVideo'
-				) {
-					links.push({
-						type: 'video',
-						url: graphql.edge_sidecar_to_children.edges[i].node.video_url,
-						dimensions:
-							graphql.edge_sidecar_to_children.edges[i].node.dimensions,
-					});
-				} else {
-					links.push({
-						type: 'image',
-						url: graphql.edge_sidecar_to_children.edges[i].node.display_url,
-						dimensions:
-							graphql.edge_sidecar_to_children.edges[i].node.dimensions,
-					});
-				}
-			}
+			graphql.edge_sidecar_to_children.edges.forEach(doc => {
+				let obj = {} as links;
+				obj.type = doc.node.is_video ? 'video' : 'image';
+				obj.url = doc.node.is_video ? doc.node.video_url : doc.node.display_url;
+				obj.dimensions = doc.node.dimensions
+				links.push(obj);
+			})
 		} else if (graphql.__typename == 'GraphVideo') {
-			links.push({
-				type: 'video',
-				url: graphql.video_url,
-				dimensions: graphql.dimensions,
-			});
+			let obj = {} as links;
+			obj.type = graphql.is_video ? 'video' : 'image';
+			obj.url = graphql.is_video ? graphql.video_url : graphql.display_url;
+			obj.dimensions = graphql.dimensions
+			links.push(obj);
 		} else if (graphql.__typename == 'GraphImage') {
-			links.push({
-				type: 'image',
-				url: graphql.display_url,
-				dimensions: graphql.dimensions,
-			});
+			let obj = {} as links;
+			obj.type = graphql.is_video ? 'video' : 'image';
+			obj.url = graphql.is_video ? graphql.video_url : graphql.display_url;
+			obj.dimensions = graphql.dimensions
+			links.push(obj);
 		}
 		return links;
 	}
@@ -161,6 +152,9 @@ export class igApi {
 			const userID = await this.getIdByUsername(username);
 			const { data } = await IGUser.get(`/${userID}/info/`);
 			const graphql: UserGraphQL = data;
+			const isSet: boolean = typeof graphql.user.full_name !== 'undefined';
+			if (!cookie.check()) throw new Error('set cookie first to use this function');
+			if (!isSet && cookie.check()) throw new Error('Invalid cookie, pls update with new cookie');
 			return {
 				id: graphql.user.pk,
 				username: graphql.user.username,
@@ -193,6 +187,11 @@ export class igApi {
 		}
 	}
 
+	/**
+	 * 
+	 * @param {StoriesGraphQL} metadata
+	 * @returns {ItemStories[]}
+	 */
 	private parseStories(metadata: StoriesGraphQL): Array<ItemStories> {
 		const items = metadata.items;
 		let storyList = new Array();
@@ -260,13 +259,89 @@ export class igApi {
 				stories: this.parseStories(graphql),
 			};
 		} catch (error: any) {
-			if (error.response) {
-				throw new Error(error.response);
+			if (error.response.status !== 200) {
+				throw new Error('Invalid Cookie');
+			} else if (error.response) {
+				throw new Error(error.response.data)
 			} else if (error.request) {
 				throw new Error(error.request);
 			} else {
 				throw new Error(error.message);
 			}
+		}
+	}
+
+	/**
+	 * Fetch all reels/highlight id
+	 * @param {username} username
+	 * @returns 
+	 */
+	private async getReelsIds(username: username): Promise<ReelsIds[]> {
+		const userID: string = await this.getIdByUsername(username);
+		const { data } = await IGHighlight.get('', {
+			params: highlight_ids_query(userID)
+		})
+		const graphql: HightlighGraphQL = data;
+		let items = new Array();
+		graphql.data.user.edge_highlight_reels.edges.map((edge) => {
+			items.push({
+				highlight_id: edge.node.id,
+				cover: edge.node.cover_media.thumbnail_src,
+				title: edge.node.title
+			})
+		})		
+		return items;
+	}
+
+	/**
+	 * get media urls from highlight id
+	 * @param {ids} id of highlight
+	 * @returns 
+	 */
+	private async getReels(ids: string): Promise<ReelsMediaData[]> {
+		const { data } = await IGHighlight.get('', { params: highlight_media_query(ids) })
+		const graphql: HMedia = data;
+		let result: ReelsMediaData[] = graphql.data.reels_media[0].items.map((item) => ({
+			media_id: item.id,
+			mimetype: item.is_video ? 'video/mp4' || 'video/gif' : 'image/jpeg',
+			taken_at : item.taken_at_timestamp,
+			type : item.is_video ? 'video' : 'image',
+			url : item.is_video ? item.video_resources[0].src : item.display_url,
+			dimensions : item.dimensions
+		}))
+		
+		return result;
+	}
+
+	/**
+	 * fetches highlight metadata (REQUIRES SESSION ID)
+	 * @param {string} username username target to fetch the highlights, also work with private profile if you use session id \w your account that follows target account
+	 * @returns
+	 */
+	async fetchHighlights(username: username): Promise<IHighlightsMetadata> {
+		try {
+			const ids = await this.getReelsIds(username);
+			const reels = await Promise.all(ids.map(x => this.getReels(x.highlight_id)))
+
+			let data: IReelsMetadata[] = [];
+			for (let i = 0; i < reels.length; i++) {
+				data.push({
+					title: ids[i].title,
+					cover: ids[i].cover,
+					media_count: reels[i].length,
+					highlights_id: ids[i].highlight_id,
+					highlights: reels[i]
+				})
+			}
+			let json: IHighlightsMetadata = {
+				username,
+				highlights_count: ids.length,
+				data: data
+			}
+			
+			return json;
+		} catch (error: any) {
+			throw new Error(error)
 		}
 	}
 }

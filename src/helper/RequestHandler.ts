@@ -34,6 +34,11 @@ export const IGStories = axios.create({
 	headers,
 });
 
+export const IGHighlight = axios.create({
+	baseURL: config.instagram_graphql,
+	headers
+})
+
 /** Fetches Instagram Search Users | Places | Hashtags*/
 export const IGSearch = axios.create({
 	baseURL: config.instagram_search_url,

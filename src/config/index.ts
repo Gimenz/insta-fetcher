@@ -8,6 +8,8 @@ export const config = {
 	/** Instagram API Search User */
 	instagram_search_url:
 		'https://www.instagram.com/web/search/topsearch/?query=',
+	/** Instagram GraphQL query */
+	instagram_graphql: 'https://www.instagram.com/graphql/query/',
 	/** Android User-Agent */
 	android:
 		'Instagram 10.8.0 Android (18/4.3; 320dpi; 720x1280; Xiaomi; HM 1SW; armani; qcom; en_US)',
