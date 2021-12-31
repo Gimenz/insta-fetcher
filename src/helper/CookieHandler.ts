@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-const DIR: string = path.join(__dirname, '../config/Cookies.json');
+let DIR: string = path.join(__dirname, '../config/Cookies.txt');
 
 export class CookieHandler {
 	constructor(session_id: string = '') {
@@ -12,9 +12,9 @@ export class CookieHandler {
 	 * @param session_id session id
 	 * @returns
 	 */
-	save(session_id: string): void {
+	public save = (session_id: string): void =>{
 		if (!fs.existsSync(DIR)) {
-			fs.writeFileSync(DIR, JSON.stringify(session_id));
+			fs.writeFileSync(DIR, session_id, 'utf-8');
 		} else {
 			this.update(session_id)
 		}
@@ -25,9 +25,9 @@ export class CookieHandler {
 	 * @param {String} session_id
 	 * @returns
 	 */
-	update(session_id: string): void {
+	public update = (session_id: string): void => {
 		if (fs.existsSync(DIR)) {
-			fs.writeFileSync(DIR, JSON.stringify(session_id));
+			fs.writeFileSync(DIR, session_id, 'utf-8');
 		} else {
 			throw new Error(
 				"Cookie hasn't been saved before, save cookie first using save()"
@@ -39,7 +39,7 @@ export class CookieHandler {
 	 * to check if cookies.json stored in local dir
 	 * @returns {boolean} true if file has stored in local dir
 	 */
-	check(): boolean {
+	public check = (): boolean => {
 		return fs.existsSync(DIR);
 		// if (fs.existsSync(DIR)) {
 		// 	return false;
@@ -52,9 +52,9 @@ export class CookieHandler {
 	 * get a session id
 	 * @returns session id
 	 */
-	get(): string {
-		const data: string = fs.existsSync(DIR)
-			? fs.readFileSync(DIR, 'utf-8')
+	public get = (): string => {
+		let data: string = this.check()
+			? fs.readFileSync(DIR, 'utf-8').toString()
 			: '';
 		return data;
 	}

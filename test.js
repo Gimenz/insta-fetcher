@@ -1,12 +1,12 @@
-const { igApi } = require('./dist');
-const ig = new igApi('1983130028%3AOuil1EbgMoXVqc%3A13');
+const { igApi, getSessionId } = require('./dist/index.js');
+const ig = new igApi('38383829%3AuZuwz5gmzih919%3A7');
 //ig.fetchUser('gimenz.id').then((res) => console.log(res));
 
-ig.fetchPost('https://www.instagram.com/reel/CXr9Y-WB5IB/?utm_source=ig_web_copy_link')
-    .then((res) => {
-        console.log(res);
-    })
-    .catch((e) => console.log(e));
+// ig.fetchPost('https://www.instagram.com/reel/CXr9Y-WB5IB/')
+//     .then((res) => {
+//         console.log(res);
+//     })
+//     .catch((e) => console.log(e));
 
 // ig.fetchStories('adiraas.p')
 //     .then((res) => {
@@ -19,3 +19,6 @@ ig.fetchPost('https://www.instagram.com/reel/CXr9Y-WB5IB/?utm_source=ig_web_copy
 //     console.log(res.data[0]);
 // })
 
+// getSessionId('username', 'password').then(res => {
+//     console.log(res);
+// }).catch(e => console.log(e))
