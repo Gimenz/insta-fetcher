@@ -1,7 +1,9 @@
 import axios from 'axios';
+import { igApi } from '../index';
 import { config } from '../config';
 import { CookieHandler } from './CookieHandler';
-let session_id = new CookieHandler().get();
+let c = new CookieHandler();
+let session_id = c.get() || c.session_id || c.session || new igApi().s;
 
 const buildHeaders = (agent: string = config.android) => {
 	return {
@@ -35,6 +37,7 @@ export const IGStories = axios.create({
 	headers: buildHeaders(),
 });
 
+/** Fetches Instagram Highlights */
 export const IGHighlight = axios.create({
 	baseURL: config.instagram_graphql,
 	headers: buildHeaders()

@@ -9,12 +9,7 @@ export type url = string;
 /** Media Type */
 export type MediaType = 'video' | 'image';
 /** Mime Type */
-export enum MimeType {
-	'image/jpeg',
-	'image/png',
-	'video/mp4',
-	'video/gif',
-}
+export type MimeType ='image/jpeg' | 'image/png'| 'video/mp4' |'video/gif';
 /** csrf token */
 export type csrfToken = string;
 /** instagram post type */

@@ -1,7 +1,3 @@
-import { MediaType, MimeType } from '.';
-
-
-
 export interface ReelsIds {
     highlight_id: string;
     cover: string;

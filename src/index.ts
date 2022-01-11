@@ -3,6 +3,7 @@
  * Modified, Updated at Rabu, 8 Desember 2021
  */
 
+import axios, { AxiosError } from 'axios';
 import { shortcodeFormatter } from './utils';
 import { IGFetch, IGUser, IGStories, IGHighlight } from './helper/RequestHandler';
 import { CookieHandler } from './helper/CookieHandler';
@@ -18,17 +19,23 @@ import {
 import { highlight_ids_query, highlight_media_query } from './helper/query';
 import { HightlighGraphQL, ReelsIds } from './types/HighlightMetadata';
 import { HMedia, IHighlightsMetadata, IReelsMetadata, ReelsMediaData } from './types/HighlightMediaMetadata';
-import axios, { AxiosError } from 'axios';
 let cookie = new CookieHandler();
 
 export * from './utils'
 export * from './helper/Session';
 export class igApi {
-	constructor(private session_id: session_id = '') {
+	/**
+	 * Recommended to set session id for most all IG Request
+	 * @param session_id session id you can get it by using getSessionId function, see README.md or example file
+	 */
+	constructor(public session_id: session_id = '') {
 		this.session_id = session_id;
 		this.setCookie(this.session_id);
 	}
-
+	
+	get s(): string {
+		return new CookieHandler(this.session_id).session_id;
+	}
 	/**
 	 * Set session id for most all IG Request
 	 * @param {session_id} session_id
@@ -37,14 +44,15 @@ export class igApi {
 		try {
 			if (!cookie.check()) {
 				cookie.save(session_id);
+				return session_id;
 			} else {
 				cookie.update(session_id);
+				return session_id;
 			}
 		} catch (error: any) {
 			throw new Error(error.message);
 		}
 	}
-
 	/**
 	 * get user id by username
 	 * @param {username} username

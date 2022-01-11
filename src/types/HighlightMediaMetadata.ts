@@ -4,7 +4,7 @@
 //
 //   "Set quicktype target language"
 
-import { MediaType, MimeType } from "types";
+import { MediaType, MimeType } from ".";
 
 /** Instagram Simplified Highlights reels Metadata */
 export interface IHighlightsMetadata {
