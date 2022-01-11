@@ -17,3 +17,12 @@ export const shortcodeFormatter = (url: string): formattedShortcode => {
         shortcode: re[2]
     }
 };
+
+/**
+ * is Instagram Url?
+ * @param url instagram post url
+ * @returns 
+ */
+export const isIgPostUrl = (url: string): boolean => {
+    return new RegExp(/(?:https?:\/\/)?(?:www\.)?(?:instagram\.com(?:\/.+?)?\/(p|reel|tv)\/)([\w-]+)(?:\/)?(\?.*)?$/, 'g').test(url);
+}
