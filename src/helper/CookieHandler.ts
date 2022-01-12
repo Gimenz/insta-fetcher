@@ -10,9 +10,6 @@ export class CookieHandler {
 		this.session_id = session_id;
 	}
 
-	get session(): session_id {
-		return this.session_id
-	}
 	/**
 	 * save session id to local directory
 	 * @param session_id session id
@@ -55,7 +52,7 @@ export class CookieHandler {
 	 */
 	public get = (): string => {
 		let data: string = this.check()
-			? fs.readFileSync(DIR, 'utf-8').toString()
+			? fs.readFileSync(DIR, 'utf-8').toString() || this.session_id
 			: this.session_id;
 		return data;
 	}

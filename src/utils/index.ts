@@ -6,11 +6,6 @@ import { formattedShortcode } from '../types';
  * @returns {formattedShortcode}
  */
 export const shortcodeFormatter = (url: string): formattedShortcode => {
-    // const Regex = new RegExp(/^(?:https?:\/\/)?(?:www\.)?(?:instagram\.com(?:\/\w+)?\/(p|reel|tv)\/)([\w-]+)(?:\/)?(\?.*)?$/gi);
-    // console.log(Regex.exec(url));
-    // const [, shortcode] = Regex.exec(url) || '';
-    // return shortcode;
-
     const re = new RegExp(/(?:https?:\/\/)?(?:www\.)?(?:instagram\.com(?:\/.+?)?\/(p|reel|tv)\/)([\w-]+)(?:\/)?(\?.*)?$/, 'g').exec(url) || '';
     return {
         type: re[1],

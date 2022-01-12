@@ -19,7 +19,6 @@ import {
 import { highlight_ids_query, highlight_media_query } from './helper/query';
 import { HightlighGraphQL, ReelsIds } from './types/HighlightMetadata';
 import { HMedia, IHighlightsMetadata, IReelsMetadata, ReelsMediaData } from './types/HighlightMediaMetadata';
-let cookie = new CookieHandler();
 
 export * from './utils'
 export * from './helper/Session';
@@ -32,22 +31,18 @@ export class igApi {
 		this.session_id = session_id;
 		this.setCookie(this.session_id);
 	}
+	private cookie = new CookieHandler(this.session_id)
 	
-	get s(): string {
-		return new CookieHandler(this.session_id).session_id;
-	}
 	/**
 	 * Set session id for most all IG Request
 	 * @param {session_id} session_id
 	 */
 	public setCookie = (session_id: session_id = this.session_id) => {
 		try {
-			if (!cookie.check()) {
-				cookie.save(session_id);
-				return session_id;
+			if (!this.cookie.check()) {
+				this.cookie.save(session_id);
 			} else {
-				cookie.update(session_id);
-				return session_id;
+				this.cookie.update(session_id);
 			}
 		} catch (error: any) {
 			throw new Error(error.message);
@@ -114,6 +109,7 @@ export class igApi {
 	 */
 	public fetchPost = async (url: url): Promise<IGPostMetadata> => {
 		try {
+			if (!this.cookie.check()) throw new Error('set cookie first to use this function');
 			const post = shortcodeFormatter(url);
 			const graphql: PostGraphQL = (await IGFetch.get(`/${post.type}/${post.shortcode}/?__a=1`))
 				.data.graphql;
@@ -164,8 +160,8 @@ export class igApi {
 			const { data } = await IGUser.get(`/${userID}/info/`);
 			const graphql: UserGraphQL = data;
 			const isSet: boolean = typeof graphql.user.full_name !== 'undefined';
-			if (!cookie.check()) throw new Error('set cookie first to use this function');
-			if (!isSet && cookie.check()) throw new Error('Invalid cookie, pls update with new cookie');
+			if (!this.cookie.check()) throw new Error('set cookie first to use this function');
+			if (!isSet && this.cookie.check()) throw new Error('Invalid cookie, pls update with new cookie');
 			return {
 				id: graphql.user.pk,
 				username: graphql.user.username,
@@ -261,6 +257,7 @@ export class igApi {
 	 */
 	public fetchStories = async(username: username): Promise<IGStoriesMetadata> => {
 		try {
+			if (!this.cookie.check()) throw new Error('set cookie first to use this function');
 			const userID = await this.getIdByUsername(username);
 			const { data } = await IGStories.get(`/${userID}/reel_media/`);
 			const graphql: StoriesGraphQL = data;
@@ -373,6 +370,7 @@ export class igApi {
 	 */
 	public fetchHighlights = async(username: username): Promise<IHighlightsMetadata> => {
 		try {
+			if (!this.cookie.check()) throw new Error('set cookie first to use this function');
 			const ids = await this._getReelsIds(username);
 			const reels = await Promise.all(ids.map(x => this._getReels(x.highlight_id)))
 

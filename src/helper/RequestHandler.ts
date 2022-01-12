@@ -3,7 +3,7 @@ import { igApi } from '../index';
 import { config } from '../config';
 import { CookieHandler } from './CookieHandler';
 let c = new CookieHandler();
-let session_id = c.get() || c.session_id || c.session || new igApi().s;
+let session_id = c.get()
 
 const buildHeaders = (agent: string = config.android) => {
 	return {
