@@ -4,7 +4,7 @@
  */
 
 import axios, { AxiosError } from 'axios';
-import { getPostType, shortcodeFormatter } from './utils';
+import { getPostType, shortcodeFormatter } from './utils/index';
 import { IGUser, IGStories, IGHighlight, IGFetchiPhone, IGFetchAndroid, IGFetchDesktop } from './helper/RequestHandler';
 import { CookieHandler } from './helper/CookieHandler';
 import { username, url, session_id, MimeType, ProductType, MediaType, IGPostType } from './types';
@@ -204,6 +204,7 @@ export class igApi {
 	public fetchPost = async (url: url): Promise<IPostModels> => {
 		if (!this.cookie.check()) throw new Error('set cookie first to use this function');
 		const post = shortcodeFormatter(url);
+		
 		const req = (await IGFetchDesktop.get(`/${post.type}/${post.shortcode}/?__a=1`))
 
 		const metadata: IRawBody = req.data

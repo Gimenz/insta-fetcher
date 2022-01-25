@@ -1,14 +1,15 @@
-import { formattedShortcode, IGPostType, postType, ProductType } from '../types';
+import { formattedShortcode, IGPostType, postType, ProductType } from '../types/index';
 
 /** Instagram post regex */
-export const IGPostRegex = new RegExp(/(?:https?:\/\/)?(?:www\.)?(?:instagram\.com(?:\/.+?)?\/(p|reel|tv)\/)([\w-]+)(?:\/)?(\?.*)?$/, 'g')
+export const IGPostRegex = /(?:https?:\/\/)?(?:www\.)?(?:instagram\.com(?:\/.+?)?\/(p|reel|tv)\/)([\w-]+)(?:\/)?(\?.*)?$/gim
+
 /**
  * format instagram long url to get shortcode
  * @param url a instagram post url
  * @returns {formattedShortcode}
  */
 export const shortcodeFormatter = (url: string): formattedShortcode => {
-    const re = IGPostRegex.exec(url) || '';
+    const re = /(?:https?:\/\/)?(?:www\.)?(?:instagram\.com(?:\/.+?)?\/(p|reel|tv)\/)([\w-]+)(?:\/)?(\?.*)?$/gim.exec(url) || '';
     return {
         type: re[1],
         shortcode: re[2],
@@ -22,7 +23,7 @@ export const shortcodeFormatter = (url: string): formattedShortcode => {
  * @returns 
  */
 export const isIgPostUrl = (url: string): boolean => {
-    return IGPostRegex.test(url);
+    return /(?:https?:\/\/)?(?:www\.)?(?:instagram\.com(?:\/.+?)?\/(p|reel|tv)\/)([\w-]+)(?:\/)?(\?.*)?$/gim.test(url);
 }
 
 /**

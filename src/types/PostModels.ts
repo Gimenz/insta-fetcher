@@ -30,7 +30,7 @@ export interface IPostModels {
     /** if post is video */
     video_duration: number | null;
 	/** music info will show if post is Reel */
-	music?: Object | null    
+	music?: ClipsMetadata | null    
 	/** media urls */
 	links: MediaUrls[];
 }
