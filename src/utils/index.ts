@@ -1,4 +1,4 @@
-import { formattedShortcode, IGPostType, ProductType } from '../types';
+import { formattedShortcode, IGPostType, postType, ProductType } from '../types';
 
 /** Instagram post regex */
 export const IGPostRegex = new RegExp(/(?:https?:\/\/)?(?:www\.)?(?:instagram\.com(?:\/.+?)?\/(p|reel|tv)\/)([\w-]+)(?:\/)?(\?.*)?$/, 'g')
@@ -25,7 +25,12 @@ export const isIgPostUrl = (url: string): boolean => {
     return IGPostRegex.test(url);
 }
 
-export const getPostType = (type: string): string => {
+/**
+ * get instagram post type
+ * @param type product_type
+ * @returns 
+ */
+export const getPostType = (type: string): postType => {
     return type == ProductType.CAROUSEL 
         ? IGPostType.carousel_container
         : type == ProductType.REEL

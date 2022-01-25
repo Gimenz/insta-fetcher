@@ -19,7 +19,7 @@ import {
 import { highlight_ids_query, highlight_media_query } from './helper/query';
 import { HightlighGraphQL, ReelsIds } from './types/HighlightMetadata';
 import { HMedia, IHighlightsMetadata, IReelsMetadata, ReelsMediaData } from './types/HighlightMediaMetadata';
-import { IPostModels, IRawBody, MediaUrls } from 'types/PostModels';
+import { IPostModels, IRawBody, MediaUrls } from './types/PostModels';
 
 export * from './utils'
 export * from './helper/Session';
