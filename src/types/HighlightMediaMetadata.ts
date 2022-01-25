@@ -28,7 +28,7 @@ export interface ReelsMediaData {
     mimetype: string;
     taken_at: number;
     /** @type MediaType */
-    type: MediaType;
+    type: string;
     /** Downloadable media url */
     url: string;
     dimensions: Dimensions;

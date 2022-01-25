@@ -24,7 +24,7 @@ export interface IGPostMetadata {
 }
 
 export interface links {
-	type: MediaType;
+	type: string;
 	/** url of downloadable media */
 	url: string;
 	dimensions: Dimensions;

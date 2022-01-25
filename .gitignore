@@ -1,4 +1,5 @@
 node_modules
+metadata
 meta.json
 stories_meta.json
 stories.json
