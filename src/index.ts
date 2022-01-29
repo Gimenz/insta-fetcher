@@ -147,7 +147,7 @@ export class igApi {
 	// 				throw error.toJSON()
 	// 			}
 	// 		} else {
-	// 			throw new Error(error);
+	// 			throw error;
 	// 		}
 	// 	}
 	// }
@@ -237,7 +237,7 @@ export class igApi {
 					throw error.toJSON()
 				}
 			} else {
-				throw new Error(error);
+				throw error;
 			}			
 		}
 	}
@@ -288,7 +288,7 @@ export class igApi {
 					throw error.toJSON()
 				}
 			} else {
-				throw new Error(error);
+				throw error;
 			}
 		}
 	}
@@ -377,7 +377,7 @@ export class igApi {
 					throw error.toJSON()
 				}
 			} else {
-				throw new Error(error);
+				throw error;
 			}
 		}
 	}
@@ -415,7 +415,7 @@ export class igApi {
 					throw error.toJSON()
 				}
 			} else {
-				throw new Error(error);
+				throw error;
 			}
 		}	
 	}
@@ -451,7 +451,7 @@ export class igApi {
 					throw error.toJSON()
 				}
 			} else {
-				throw new Error(error);
+				throw error;
 			}
 		}		
 	}
@@ -485,7 +485,7 @@ export class igApi {
 			
 			return json;
 		} catch (error: any) {
-			throw new Error(error)
+			throw error
 		}
 	}
 }

@@ -2,15 +2,15 @@
 /** Instagram Highlight query */
 export const highlight_ids_query = (userId: string) => {
     return {
-        'query_hash': 'e74d51c10ecc0fe6250a295b9bb9db74',
+        'query_hash': 'c9100bf9110dd6361671f113dd02e7d6',
         'variables': JSON.stringify({
             "user_id": userId,
-            "include_chaining": false,
-            "include_reel": false,
-            "include_suggested_users": false,
-            "include_logged_out_extras": true,
-            "include_highlight_reels": true,
-            "include_related_profiles": true
+            "include_chaining":false,
+            "include_reel":true,
+            "include_suggested_users":false,
+            "include_logged_out_extras":false,
+            "include_highlight_reels":true,
+            "include_live_status":false
         })
     }
 }

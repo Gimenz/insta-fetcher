@@ -193,7 +193,7 @@ export interface CommentInformTreatment {
 }
 
 export interface ClipsMetadata {
-    music_info:                  null;
+    music_info:                  MusicInfo;
     original_sound_info:         OriginalSoundInfo;
     audio_type:                  string;
     music_canonical_id:          string;
@@ -212,7 +212,7 @@ export interface ClipsMetadata {
     asset_recommendation_info:   null;
     contextual_highlight_info:   null;
     clips_creation_entry_point:  string;
-    audio_ranking_info:          AudioRankingInfo;
+    audio_ranking_info:          AudioRankingInfo;  
 }
 
 export interface AdditionalAudioInfo {
@@ -239,6 +239,78 @@ export interface MashupInfo {
     formatted_mashups_count:                  null;
     original_media:                           null;
     non_privacy_filtered_mashups_media_count: null;
+}
+
+export interface MusicInfo {
+    music_asset_info:       MusicAssetInfo;
+    music_consumption_info: MusicConsumptionInfo;
+    push_blocking_test:     null;
+}
+
+export interface MusicAssetInfo {
+    audio_cluster_id:                    string;
+    id:                                  string;
+    title:                               string;
+    subtitle:                            string;
+    display_artist:                      string;
+    artist_id:                           string;
+    cover_artwork_uri:                   string;
+    cover_artwork_thumbnail_uri:         string;
+    progressive_download_url:            string;
+    reactive_audio_download_url:         null;
+    fast_start_progressive_download_url: string;
+    highlight_start_times_in_ms:         number[];
+    is_explicit:                         boolean;
+    dash_manifest:                       null;
+    has_lyrics:                          boolean;
+    audio_asset_id:                      string;
+    duration_in_ms:                      number;
+    dark_message:                        null;
+    allows_saving:                       boolean;
+    territory_validity_periods:          TerritoryValidityPeriods;
+}
+
+export interface TerritoryValidityPeriods {
+}
+
+export interface MusicConsumptionInfo {
+    ig_artist:                       CoauthorProducer;
+    placeholder_profile_pic_url:     string;
+    should_mute_audio:               boolean;
+    should_mute_audio_reason:        string[];
+    is_bookmarked:                   boolean;
+    overlap_duration_in_ms:          number;
+    audio_asset_start_time_in_ms:    number;
+    allow_media_creation_with_music: boolean;
+    is_trending_in_clips:            boolean;
+    formatted_clips_media_count:     null;
+    streaming_services:              null;
+    display_labels:                  null;
+}
+
+export interface CoauthorProducer {
+    pk:                   number;
+    username:             string;
+    full_name:            string;
+    is_private:           boolean;
+    profile_pic_url:      string;
+    profile_pic_id?:      string;
+    is_verified:          boolean;
+    follow_friction_type: number;
+    friendship_status?:   CoauthorProducerFriendshipStatus;
+}
+
+export interface CoauthorProducerFriendshipStatus {
+    following:        boolean;
+    followed_by:      boolean;
+    blocking:         boolean;
+    muting:           boolean;
+    is_private:       boolean;
+    incoming_request: boolean;
+    outgoing_request: boolean;
+    is_bestie:        boolean;
+    is_restricted:    boolean;
+    is_feed_favorite: boolean;
 }
 
 export interface OriginalSoundInfo {

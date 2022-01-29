@@ -33,7 +33,17 @@ export const getSessionId = async (username: username, password: password): Prom
             'user-agent': config.iPhone,
             'cache-Control': 'no-cache',
             'content-type': 'application/x-www-form-urlencoded',
-            referer: 'https://www.instagram.com/accounts/login/?source=auth_switcher'
+            referer: 'https://www.instagram.com/accounts/login/?source=auth_switcher',
+            'authority': 'www.instagram.com',
+            'origin': 'https://www.instagram.com',
+            'accept-language': 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
+            'sec-fetch-site': 'same-origin',
+            'sec-fetch-mode': 'cors',
+            'sec-fetch-dest': 'empty',
+            'x-ig-app-id': '936619743392459',
+            'x-ig-www-claim': 'hmac.AR3W0DThY2Mu5Fag4sW5u3RhaR3qhFD_5wvYbOJOD9qaPjIf',
+            'x-instagram-ajax': '1',
+            'x-requested-with': 'XMLHttpRequest'
         }
     
         const { headers, data }: AxiosResponse = await axios({
