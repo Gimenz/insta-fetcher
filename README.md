@@ -4,6 +4,8 @@
 
 Fetch instagram api with full details and simplified json metadata
 
+**Read the docs [here](https://adiwajshing.github.io/Baileys)**
+
 ☕ Buy Me a Coffee : [Saweria](https://saweria.co/masgimenz 'Saweria')
 
 # Features
@@ -27,13 +29,12 @@ npm i insta-fetcher
 
 recommended to set the session id before make call to all function
 
-``` ts
+```js
 let { igApi, getSessionId } = require('insta-fetcher');
 let ig = new igApi('your session id');
 
 //or use setCookie function
 ig.setCookie('your session id');
-
 
 // you can get sesion id by using getSessionId function, it requires username & password
 (async () => {
@@ -44,7 +45,7 @@ ig.setCookie('your session id');
 
 Example
 
-``` js
+```js
 let { igApi } = require('insta-fetcher');
 let ig = new igApi();
 
