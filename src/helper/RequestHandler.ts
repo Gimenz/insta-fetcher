@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { igApi } from '../index';
 import { config } from '../config';
 import { CookieHandler } from './CookieHandler';
 let c = new CookieHandler();

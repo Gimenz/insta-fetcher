@@ -42,3 +42,8 @@ export const getPostType = (type: string): postType => {
         ? IGPostType.igtv
         : IGPostType.feed
 }
+
+/** get random number in range */
+export const randInt = (min: number, max: number, q = 0.001): number => {
+    return Math.floor((Math.random() * (min - max)) / q) * q
+}

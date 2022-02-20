@@ -22,14 +22,12 @@ Fetch instagram api with full details and simplified json metadata
 Installation:
 
 ```
-
 npm i insta-fetcher
-
 ```
 
 recommended to set the session id before make call to all function
 
-```js
+``` ts
 let { igApi, getSessionId } = require('insta-fetcher');
 let ig = new igApi('your session id');
 
@@ -46,7 +44,7 @@ ig.setCookie('your session id');
 
 Example
 
-```js
+``` js
 let { igApi } = require('insta-fetcher');
 let ig = new igApi();
 

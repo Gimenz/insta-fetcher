@@ -1,6 +1,7 @@
 export const config = {
 	/** Instagram Base URL */
 	instagram_base_url: 'https://www.instagram.com',
+	instagram_base_z4: 'https://z-p4.www.instagram.com',
 	/** Instagram Api Stories */
 	instagram_stories_url: 'https://i.instagram.com/api/v1/feed/user',
 	/** Instagram Api Fetch User Data */
