@@ -4,7 +4,7 @@
 
 Fetch instagram api with full details and simplified json metadata
 
-**Read the docs [here](https://adiwajshing.github.io/Baileys)**
+**Read the docs [here](https://gimenz.github.io/insta-fetcher/)**
 
 ☕ Buy Me a Coffee : [Saweria](https://saweria.co/masgimenz 'Saweria')
 
