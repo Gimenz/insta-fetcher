@@ -1,10 +1,10 @@
 /* Muhamad Ristiyanto _ https://github.com/Gimenz
  * Created, Published at Selasa, 9 Maret 2021
- * Modified, Updated at Rabu, 8 Desember 2021
+ * Modified, Updated at Minggu, 20 Februari 2022
  */
 
-import axios, { AxiosError } from 'axios';
-import { getPostType, shortcodeFormatter } from './utils/index';
+import axios, { AxiosError, AxiosRequestConfig } from 'axios';
+import { getPostType, randInt, shortcodeFormatter } from './utils/index';
 import { IGUser, IGStories, IGHighlight, IGFetchiPhone, IGFetchAndroid, IGFetchDesktop } from './helper/RequestHandler';
 import { CookieHandler } from './helper/CookieHandler';
 import { username, url, session_id, MimeType, ProductType, MediaType, IGPostType } from './types';
@@ -20,6 +20,12 @@ import { highlight_ids_query, highlight_media_query } from './helper/query';
 import { HightlighGraphQL, ReelsIds } from './types/HighlightMetadata';
 import { HMedia, IHighlightsMetadata, IReelsMetadata, ReelsMediaData } from './types/HighlightMediaMetadata';
 import { IPostModels, IRawBody, MediaUrls } from './types/PostModels';
+import { config } from './config';
+import fs from 'fs'
+import { getCsrfToken } from './helper/Session';
+import { PostFeedResult } from './types/PostFeedResult';
+import { PostStoryResult } from './types/PostStoryResult';
+import { MediaConfigureOptions } from './types/MediaConfigureOptions';
 
 export * from './utils'
 export * from './helper/Session';
@@ -33,6 +39,36 @@ export class igApi {
 		this.setCookie(this.session_id);
 	}
 	private cookie = new CookieHandler(this.session_id)
+
+	private buildHeaders = (agent: string = config.android, options?: any) => {
+		return {
+			'user-agent': agent,
+			'cookie': `sessionid=${this.cookie.get() || this.session_id};`,
+			'authority': 'www.instagram.com',
+            'content-type': 'application/x-www-form-urlencoded',
+            'origin': 'https://www.instagram.com',
+            'accept-language': 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
+            'sec-fetch-site': 'same-origin',
+            'sec-fetch-mode': 'cors',
+            'sec-fetch-dest': 'empty',
+            'x-ig-app-id': 936619743392459,
+            'x-ig-www-claim': 'hmac.AR3W0DThY2Mu5Fag4sW5u3RhaR3qhFD_5wvYbOJOD9qaPjIf',
+            'x-instagram-ajax': 1,
+            'x-requested-with': 'XMLHttpRequest',
+			...options
+		};
+	}
+
+	/** Make request to IG API */
+	private FetchIGAPI = (baseURL: string, url: string = '', agent: string = config.android, options: AxiosRequestConfig = {}) => {
+		return axios({
+			baseURL,
+			url,
+			headers: options.headers ? options.headers : this.buildHeaders(agent),
+			method: options.method || 'GET',
+			...options
+		});
+	}
 	
 	/**
 	 * Set session id for most all IG Request
@@ -56,7 +92,11 @@ export class igApi {
 	 */
 	public getIdByUsername = async (username: username): Promise<string> => {
 		try {
-			const { data } = await IGFetchiPhone.get(`/${username}/?__a=1`);
+			const { data } = await this.FetchIGAPI(
+				config.instagram_base_url,
+				`/${username}/?__a=1`, 
+				config.iPhone,
+			);
 			return data.graphql.user.id;
 		} catch (error: any) {
 			if (error.response.status == 403) {
@@ -202,10 +242,15 @@ export class igApi {
 	}
 
 	public fetchPost = async (url: url): Promise<IPostModels> => {
-		if (!this.cookie.check()) throw new Error('set cookie first to use this function');
+		if (!this.session_id) throw new Error('set cookie first to use this function');
 		const post = shortcodeFormatter(url);
 		
-		const req = (await IGFetchDesktop.get(`/${post.type}/${post.shortcode}/?__a=1`))
+		//const req = (await IGFetchDesktop.get(`/${post.type}/${post.shortcode}/?__a=1`))
+		const req = await this.FetchIGAPI(
+			config.instagram_base_url, 
+			`/${post.type}/${post.shortcode}/?__a=1`,
+			config.desktop
+		)
 
 		const metadata: IRawBody = req.data
 		const item = metadata.items[0]
@@ -250,10 +295,14 @@ export class igApi {
 	public fetchUser = async (username: username): Promise<IGUserMetadata> => {
 		try {
 			const userID = await this.getIdByUsername(username);
-			const { data } = await IGUser.get(`/${userID}/info/`);
+			// const { data } = await IGUser.get(`/${userID}/info/`);
+			const { data } = await this.FetchIGAPI(
+				config.instagram_user_url,
+				`/${userID}/info/`
+			);
 			const graphql: UserGraphQL = data;
 			const isSet: boolean = typeof graphql.user.full_name !== 'undefined';
-			if (!this.cookie.check()) throw new Error('set cookie first to use this function');
+			if (!this.session_id) throw new Error('set cookie first to use this function');
 			if (!isSet && this.cookie.check()) throw new Error('Invalid cookie, pls update with new cookie');
 			return {
 				id: graphql.user.pk,
@@ -344,15 +393,20 @@ export class igApi {
 	}
 
 	/**
-	 * fetches stories metadata (THIS FUNCTION REQUIRES SESSION ID)
+	 * fetches stories metadata 
 	 * @param {string} username username target to fetch the stories, also work with private profile if you use session id \w your account that follows target account
 	 * @returns
 	 */
 	public fetchStories = async(username: username): Promise<IGStoriesMetadata> => {
 		try {
-			if (!this.cookie.check()) throw new Error('set cookie first to use this function');
+			if (!this.session_id) throw new Error('set cookie first to use this function');
 			const userID = await this.getIdByUsername(username);
-			const { data } = await IGStories.get(`/${userID}/reel_media/`);
+			//const { data } = await IGStories.get(`/${userID}/reel_media/`);
+			const { data } = await this.FetchIGAPI(
+				config.instagram_stories_url,
+				`/${userID}/reel_media/`,
+				config.iPhone
+			);
 			const graphql: StoriesGraphQL = data;
 			const isFollowing: boolean =
 				typeof graphql.user.friendship_status !== 'undefined';
@@ -390,9 +444,15 @@ export class igApi {
 	private _getReelsIds = async (username: username): Promise<ReelsIds[]> => {
 		try {
 			const userID: string = await this.getIdByUsername(username);
-			const { data } = await IGHighlight.get('', {
-				params: highlight_ids_query(userID)
-			})
+			// const { data } = await IGHighlight.get('', {
+			// 	params: highlight_ids_query(userID)
+			// })
+			const { data } = await this.FetchIGAPI(
+				config.instagram_graphql,
+				'',
+				config.iPhone,
+				{ params: highlight_ids_query(userID)}
+			)
 			const graphql: HightlighGraphQL = data;
 			let items = new Array();
 			graphql.data.user.edge_highlight_reels.edges.map((edge) => {
@@ -427,7 +487,13 @@ export class igApi {
 	 */
 	private _getReels = async (ids: string): Promise<ReelsMediaData[]> => {
 		try {
-			const { data } = await IGHighlight.get('', { params: highlight_media_query(ids) })
+			// const { data } = await IGHighlight.get('', { params: highlight_media_query(ids) })
+			const { data } = await this.FetchIGAPI(
+				config.instagram_graphql,
+				'',
+				config.iPhone,
+				{ params: highlight_media_query(ids) }
+			)
 			const graphql: HMedia = data;
 			let result: ReelsMediaData[] = graphql.data.reels_media[0].items.map((item) => ({
 				media_id: item.id,
@@ -463,7 +529,7 @@ export class igApi {
 	 */
 	public fetchHighlights = async(username: username): Promise<IHighlightsMetadata> => {
 		try {
-			if (!this.cookie.check()) throw new Error('set cookie first to use this function');
+			if (!this.session_id) throw new Error('set cookie first to use this function');
 			const ids = await this._getReelsIds(username);
 			const reels = await Promise.all(ids.map(x => this._getReels(x.highlight_id)))
 
@@ -488,4 +554,126 @@ export class igApi {
 			throw error
 		}
 	}
+
+	private uploadPhoto = async(photo: string | Buffer) => {
+		try {
+			const uploadId = Date.now();
+
+			const file = Buffer.isBuffer(photo)
+				? photo
+				: fs.existsSync(photo)
+					? fs.readFileSync(photo)
+					: photo;
+	
+			const uploadParams = {
+				media_type: 1,
+				upload_id: uploadId.toString(),
+				upload_media_height: 1080,
+				upload_media_width: 1080,
+				xsharing_user_ids: JSON.stringify([]),
+				image_compression: JSON.stringify({
+					lib_name: 'moz',
+					lib_version: '3.1.m',
+					quality: '80'
+				})
+			}
+		  
+			const nameEntity = `${uploadId}_0_${randInt(1000000000, 9999999999)}`
+	
+			const ndas = {
+				'x-entity-type': 'image/jpeg',
+				offset: 0,
+				'x-entity-name': nameEntity,
+				'x-instagram-rupload-params': JSON.stringify(uploadParams),
+				'x-entity-length': Buffer.byteLength(file),
+				'Content-Length': Buffer.byteLength(file),
+				'Content-Type': 'application/octet-stream',
+				'x-ig-app-id': `1217981644879628`,
+				'Accept-Encoding': 'gzip',
+				'X-Pigeon-Rawclienttime': (Date.now() / 1000).toFixed(3),
+				'X-IG-Connection-Speed': `${randInt(3700, 1000)}kbps`,
+				'X-IG-Bandwidth-Speed-KBPS': '-1.000',
+				'X-IG-Bandwidth-TotalBytes-B': '0',
+				'X-IG-Bandwidth-TotalTime-MS': '0',
+			}
+	
+			const headersPhoto = this.buildHeaders(config.android, ndas)
+	
+			const result = await this.FetchIGAPI(
+				`${config.instagram_base_url}`,
+				`/rupload_igphoto/fb_uploader_${nameEntity}`, 
+				config.android,
+				{ headers: headersPhoto, data: file, method: 'POST' }
+			);
+			return result.data
+		} catch (error) {
+			throw error
+		}
+	}
+
+	/**
+	 * Post a photo to instagram
+	 * @param photo 
+	 * @param type post type
+	 * @param options 
+	 * @returns 
+	 */
+	public addPost = async(photo: string | Buffer, type: 'feed' | 'story' = 'feed', options: MediaConfigureOptions): Promise<PostFeedResult|PostStoryResult> =>{
+		if (!this.session_id) throw new Error('set cookie first to use this function');
+        try{
+            const dateObj = new Date()
+            const now = dateObj
+              .toISOString()
+              .replace(/T/, ' ')
+              .replace(/\..+/, ' ')
+            const offset = dateObj.getTimezoneOffset()
+        
+            const responseUpload = await this.uploadPhoto(photo);
+
+            const payloadForm = {
+                upload_id: responseUpload.upload_id,
+                timezone_offset: offset,
+                date_time_original: now,
+                date_time_digitalized: now,
+                source_type: '4',
+				// edits: {
+                //     crop_original_size: [1080, 1080],
+                //     crop_center: [0.0, -0.0],
+                //     crop_zoom: 1.0
+                // },
+				...options
+            }
+
+			let headers = {
+				'authority': 'www.instagram.com',
+				'x-ig-www-claim': 'hmac.AR2-43UfYbG2ZZLxh-BQ8N0rqGa-hESkcmxat2RqMAXejXE3',
+				'x-instagram-ajax': 'adb961e446b7-hot',
+				'content-type': 'application/x-www-form-urlencoded',
+				'accept': '*/*',
+				'user-agent': config.desktop,
+				'x-requested-with': 'XMLHttpRequest',
+				'x-csrftoken': await getCsrfToken(),
+				'x-ig-app-id': '1217981644879628',
+				'origin': 'https://www.instagram.com',
+				'sec-fetch-site': 'same-origin',
+				'sec-fetch-mode': 'cors',
+				'sec-fetch-dest': 'empty',
+				'referer': 'https://www.instagram.com/create/details/',
+                'accept-language': 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
+				'cookie': `sessionid=${this.cookie.get() || this.session_id};`,
+            }
+			//let payload = `upload_id=${responseUpload.upload_id}&caption=${caption}&usertags=&custom_accessibility_caption=&retry_timeout=`
+
+			const result = await this.FetchIGAPI(
+				`${config.instagram_base_url}`,
+				`/create/${type === 'feed' ? 'configure/' : 'configure_to_story/'}`, 
+				config.android,
+				{ data: new URLSearchParams(Object.entries(payloadForm)).toString(), method: 'POST', headers: headers}
+			);
+			
+            return result.data
+        } catch (error: any){
+            throw error
+        }
+    }
 }

@@ -2,7 +2,7 @@ import axios, { AxiosRequestHeaders, AxiosResponse } from "axios";
 import { config } from "../config";
 import { csrfToken, password, session_id, username } from "../types";
 
-const getCsrfToken = async(): Promise<csrfToken> => {
+export const getCsrfToken = async(): Promise<csrfToken> => {
     try {
         const { headers } = await axios({
             method: 'GET',
