@@ -1,3 +1,14 @@
+export * from './HighlightMediaMetadata'
+export * from './HighlightMetadata'
+export * from './MediaConfigureOptions'
+export * from './PostFeedResult'
+export * from './PostMetadata'
+export * from './PostModels'
+export * from './PostStoryResult'
+export * from './StoriesMetadata'
+export * from './UserGraphQlV2'
+export * from './UserMetadata'
+
 /** instagram username */
 export type username = string;
 /** instagram password */
@@ -17,6 +28,12 @@ export enum ProductType {
 	REEL = 'clips',
 	TV = 'igtv',
 	SINGLE = 'feed'
+}
+
+export enum Typename {
+    GraphImage = "GraphImage",
+    GraphSidecar = "GraphSidecar",
+    GraphVideo = "GraphVideo",
 }
 
 export enum IGPostType {

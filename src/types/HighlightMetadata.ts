@@ -1,3 +1,5 @@
+import { HighlightOwner } from "./HighlightMediaMetadata";
+
 export interface ReelsIds {
     highlight_id: string;
     cover: string;
@@ -5,16 +7,16 @@ export interface ReelsIds {
 }
 
 export interface HightlighGraphQL {
-    data:   Data;
+    data:   IHighlightData;
     status: string;
 }
 
-export interface Data {
+export interface IHighlightData {
     viewer: null;
-    user:   User;
+    user:   IHighlightUser;
 }
 
-export interface User {
+export interface IHighlightUser {
     has_public_story:      boolean;
     edge_highlight_reels:  Edge;
     edge_related_profiles: Edge;
@@ -33,7 +35,7 @@ export interface Node {
     id:                            string;
     cover_media:                   CoverMedia;
     cover_media_cropped_thumbnail: CoverMediaCroppedThumbnail;
-    owner:                         Owner;
+    owner:                         HighlightOwner;
     title:                         string;
 }
 
@@ -43,11 +45,4 @@ export interface CoverMedia {
 
 export interface CoverMediaCroppedThumbnail {
     url: string;
-}
-
-export interface Owner {
-    __typename:      string;
-    id:              string;
-    profile_pic_url: string;
-    username:        string;
 }

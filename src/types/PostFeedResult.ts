@@ -4,6 +4,8 @@
 //
 //   "Set quicktype target language"
 
+import { Candidate, CommentInformTreatment, ImageVersions2, MusicMetadata, SharingFrictionInfo } from ".";
+
 export interface PostFeedResult {
     media:  Media;
     status: string;
@@ -20,7 +22,7 @@ export interface Media {
     filter_type:                              number;
     accessibility_caption:                    string;
     is_unified_video:                         boolean;
-    user:                                     User;
+    user:                                     IPostOwnerUser;
     can_viewer_reshare:                       boolean;
     caption_is_edited:                        boolean;
     like_and_view_counts_disabled:            boolean;
@@ -56,38 +58,11 @@ export interface Media {
     music_metadata:                           MusicMetadata;
 }
 
-export interface CommentInformTreatment {
-    should_have_inform_treatment: boolean;
-    text:                         string;
-}
-
 export interface FbUserTags {
     in: any[];
 }
 
-export interface ImageVersions2 {
-    candidates: Candidate[];
-}
-
-export interface Candidate {
-    width:  number;
-    height: number;
-    url:    string;
-}
-
-export interface MusicMetadata {
-    music_canonical_id:  string;
-    audio_type:          null;
-    music_info:          null;
-    original_sound_info: null;
-}
-
-export interface SharingFrictionInfo {
-    should_have_sharing_friction: boolean;
-    bloks_app_url:                null;
-}
-
-export interface User {
+export interface IPostOwnerUser {
     pk:                            number;
     username:                      string;
     full_name:                     string;

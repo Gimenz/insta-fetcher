@@ -4,12 +4,14 @@
 //
 //   "Set quicktype target language"
 
+import { CommentInformTreatment, ImageVersions2, SharingFrictionInfo, User } from ".";
+
 export interface PostStoryResult {
-    media:  Media;
+    media:  StoryMedia;
     status: string;
 }
 
-export interface Media {
+export interface StoryMedia {
     taken_at:                                 number;
     pk:                                       string;
     id:                                       string;
@@ -74,45 +76,4 @@ export interface Media {
     has_shared_to_fb:                         number;
     has_shared_to_fb_dating:                  number;
     source_type:                              number;
-}
-
-export interface CommentInformTreatment {
-    should_have_inform_treatment: boolean;
-    text:                         string;
-}
-
-export interface ImageVersions2 {
-    candidates: Candidate[];
-}
-
-export interface Candidate {
-    width:  number;
-    height: number;
-    url:    string;
-}
-
-export interface SharingFrictionInfo {
-    should_have_sharing_friction: boolean;
-    bloks_app_url:                null;
-}
-
-export interface User {
-    pk:                            number;
-    username:                      string;
-    full_name:                     string;
-    is_private:                    boolean;
-    profile_pic_url:               string;
-    profile_pic_id:                string;
-    is_verified:                   boolean;
-    follow_friction_type:          number;
-    has_anonymous_profile_picture: boolean;
-    can_boost_post:                boolean;
-    can_see_organic_insights:      boolean;
-    show_insights_terms:           boolean;
-    reel_auto_archive:             string;
-    is_unpublished:                boolean;
-    allowed_commenter_type:        string;
-    has_highlight_reels:           boolean;
-    interop_messaging_user_fbid:   string;
-    fbid_v2:                       string;
 }

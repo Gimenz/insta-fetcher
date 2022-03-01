@@ -35,11 +35,11 @@ export interface IGUserMetadata {
 }
 
 export interface UserGraphQL {
-	user: User;
+	user: UserDetails;
 	status: string;
 }
 
-export interface User {
+export interface UserDetails {
 	pk: number;
 	username: string;
 	full_name: string;

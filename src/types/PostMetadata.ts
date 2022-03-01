@@ -1,4 +1,4 @@
-import { MediaType } from '.';
+import { ClipsMusicAttributionInfo, EdgeFollowClass, MediaType, Typename, User } from '.';
 
 export interface IGPostMetadata {
 	/** an Instagram Username */
@@ -127,15 +127,47 @@ export interface EdgeMediaToParentCommentClass {
 }
 
 export interface PurpleNode {
+	__typename: Typename;
 	id: string;
 	text: string;
 	created_at: number;
 	did_report_as_spam: boolean;
-	owner: NodeOwner;
 	viewer_has_liked: boolean;
 	edge_liked_by: EdgeFollowedByClass;
 	is_restricted_pending: boolean;
 	edge_threaded_comments?: EdgeMediaToParentCommentClass;
+	shortcode: string;
+	dimensions: Dimensions;
+	display_url: string;
+	edge_media_to_tagged_user: EdgeMediaToTaggedUser;
+	fact_check_overall_rating: null;
+	fact_check_information: null;
+	gating_info: null;
+	sharing_friction_info: SharingFrictionInfo;
+	media_overlay_info: null;
+	media_preview: null | string;
+	owner: User;
+	is_video: boolean;
+	has_upcoming_event: boolean;
+	accessibility_caption: null | string;
+	edge_media_to_caption: EdgeMediaToCaptionClass;
+	edge_media_to_comment: EdgeFollowClass;
+	comments_disabled: boolean;
+	taken_at_timestamp: number;
+	edge_media_preview_like: EdgeFollowClass;
+	location: Location | null;
+	thumbnail_src: string;
+	thumbnail_resources: DisplayResource[];
+	coauthor_producers: any[];
+	dash_info?: DashInfo;
+	has_audio?: boolean;
+	tracking_token?: string;
+	video_url?: string;
+	video_view_count?: number;
+	felix_profile_grid_crop?: null;
+	product_type?: string;
+	clips_music_attribution_info?: ClipsMusicAttributionInfo;
+	edge_sidecar_to_children?: EdgeSidecarToChildren;
 }
 
 export interface EdgeMediaPreviewCommentEdge {
@@ -179,12 +211,12 @@ export interface EdgeMediaToTaggedUserEdge {
 }
 
 export interface TentacledNode {
-	user: User;
+	user: UserNode;
 	x: number;
 	y: number;
 }
 
-export interface User {
+export interface UserNode {
 	full_name: string;
 	followed_by_viewer: boolean;
 	id: string;
@@ -221,7 +253,11 @@ export interface StickyNode {
 	is_video: boolean;
 	tracking_token: string;
 	upcoming_event: null;
-	edge_media_to_tagged_user: EdgeMediaToTaggedUser;
+	owner: User;
+	has_upcoming_event: boolean;
+	dash_info?: DashInfo;
+	has_audio?: boolean;
+	video_view_count?: number;
 }
 
 export interface SharingFrictionInfo {

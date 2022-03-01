@@ -1,9 +1,8 @@
 {
 	"name": "insta-fetcher",
-	"version": "1.3.14",
+	"version": "1.3.17",
 	"description": "Simplified Instagram metadata scraping",
 	"main": "./dist/index.js",
-	"types": "./dist/types",
 	"scripts": {
 		"build:all": "tsc && typedoc",
 		"build": "tsc",

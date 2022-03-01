@@ -5,14 +5,11 @@
 
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 import { getPostType, randInt, shortcodeFormatter } from './utils/index';
-import { IGUser, IGStories, IGHighlight, IGFetchiPhone, IGFetchAndroid, IGFetchDesktop } from './helper/RequestHandler';
 import { CookieHandler } from './helper/CookieHandler';
-import { username, url, session_id, MimeType, ProductType, MediaType, IGPostType } from './types';
-import { IGPostMetadata, links, PostGraphQL } from './types/PostMetadata';
+import { username, url, session_id, ProductType, MediaType } from './types';
 import { IGUserMetadata, UserGraphQL } from './types/UserMetadata';
 import {
 	IGStoriesMetadata,
-	IGStoriesMetadataUser,
 	ItemStories,
 	StoriesGraphQL,
 } from './types/StoriesMetadata';
@@ -26,8 +23,10 @@ import { getCsrfToken } from './helper/Session';
 import { PostFeedResult } from './types/PostFeedResult';
 import { PostStoryResult } from './types/PostStoryResult';
 import { MediaConfigureOptions } from './types/MediaConfigureOptions';
+import { GraphqlUser, UserGraphQLV2 } from './types/UserGraphQlV2';
 
 export * from './utils'
+export * as InstagramMetadata from './types'
 export * from './helper/Session';
 export class igApi {
 	/**
@@ -288,7 +287,7 @@ export class igApi {
 	}
 
 	/**
-	 * fetch profile by username
+	 * fetch profile by username. including email, phone number 
 	 * @param {String} username
 	 * @returns {Promise<IGUserMetadata>}
 	 */
@@ -340,6 +339,38 @@ export class igApi {
 				throw error;
 			}
 		}
+	}
+
+	public fetchUserV2 = async (username: username) => {
+		try {
+			const { data } = await this.FetchIGAPI(config.instagram_base_url, `/${username}/?__a=1`);
+			const {graphql}: UserGraphQLV2 = data;
+			return graphql.user as GraphqlUser;
+		} catch (error: any | AxiosError) {
+			if (axios.isAxiosError(error)) {
+				if (error.response?.status == 404) {
+					throw new Error('User Not Found');
+				} else if (error.response?.status == 403) {
+					throw new Error('Forbidden, try set cookie first');
+				} else if (error.response?.status == 401) {
+					throw new Error('Unauthorized, try set cookie first');
+				} else {
+					throw error.toJSON()
+				}
+			} else {
+				throw error;
+			}
+		}
+	}
+
+	/**
+	 * simple method to check is user follow me
+	 * @param username 
+	 * @returns true if user is follow me
+	 */
+	public isFollowMe = async (username: username): Promise<boolean> => {
+		const user = await this.fetchUserV2(username);
+		return user.follows_viewer;
 	}
 
 	/**

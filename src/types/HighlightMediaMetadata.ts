@@ -4,7 +4,7 @@
 //
 //   "Set quicktype target language"
 
-import { MediaType, MimeType } from ".";
+import { Dimensions, DisplayResource, MediaType, MimeType, PageInfo } from ".";
 
 /** Instagram Simplified Highlights reels Metadata */
 export interface IHighlightsMetadata {
@@ -36,11 +36,11 @@ export interface ReelsMediaData {
 }
 
 export interface HMedia {
-    data:   Data;
+    data:   ReelsData;
     status: string;
 }
 
-export interface Data {
+export interface ReelsData {
     reels_media: ReelsMedia[];
 }
 
@@ -49,11 +49,11 @@ export interface ReelsMedia {
     id:                string;
     latest_reel_media: null;
     can_reply:         boolean;
-    owner:             Owner;
-    items:             Item[];
+    owner:             HighlightOwner;
+    items:             HighlightItem[];
 }
 
-export interface Item {
+export interface HighlightItem {
     audience:                   string;
     edge_story_media_viewers:   EdgeStoryMediaViewers;
     __typename:                 string;
@@ -71,7 +71,7 @@ export interface Item {
     story_cta_url:              null;
     story_view_count:           null;
     is_video:                   boolean;
-    owner:                      Owner;
+    owner:                      HighlightOwner;
     tracking_token:             string;
     tappable_objects:           any[];
     story_app_attribution:      null;
@@ -81,17 +81,6 @@ export interface Item {
     overlay_image_resources?:   null;
     video_duration?:            number;
     video_resources:           VideoResource[];
-}
-
-export interface Dimensions {
-    height: number;
-    width:  number;
-}
-
-export interface DisplayResource {
-    src:           string;
-    config_width:  number;
-    config_height: number;
 }
 
 export interface EdgeMediaToSponsorUser {
@@ -104,12 +93,7 @@ export interface EdgeStoryMediaViewers {
     edges:     any[];
 }
 
-export interface PageInfo {
-    has_next_page: boolean;
-    end_cursor:    null;
-}
-
-export interface Owner {
+export interface HighlightOwner {
     id:                  string;
     profile_pic_url:     string;
     username:            string;
