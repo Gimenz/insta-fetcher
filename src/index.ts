@@ -32,17 +32,19 @@ export class igApi {
 	/**
 	 * Recommended to set session id for most all IG Request
 	 * @param session_id session id you can get it by using getSessionId function, see README.md or example file
+	 * @param useStoredCookie use stored cookie if you have it. Default is true
 	 */
-	constructor(public session_id: session_id = '') {
+	constructor(public session_id: session_id = '', public useStoredCookie : boolean = true) {
 		this.session_id = session_id;
-		this.setCookie(this.session_id);
+		this.useStoredCookie = useStoredCookie;
+		if (this.useStoredCookie) this.setCookie(this.session_id);
 	}
 	private cookie = new CookieHandler(this.session_id)
 
 	private buildHeaders = (agent: string = config.android, options?: any) => {
 		return {
 			'user-agent': agent,
-			'cookie': `sessionid=${this.cookie.get() || this.session_id};`,
+			'cookie': `sessionid=${(this.useStoredCookie && this.cookie.get()) || this.session_id};`,
 			'authority': 'www.instagram.com',
             'content-type': 'application/x-www-form-urlencoded',
             'origin': 'https://www.instagram.com',
@@ -99,9 +101,9 @@ export class igApi {
 			return data.graphql.user.id;
 		} catch (error: any) {
 			if (error.response.status == 403) {
-				throw new Error('Forbidden, try set cookie first');
+				throw new Error('Forbidden, try set cookie/session id first');
 			} else if (error.response.status == 401) {
-				throw new Error('Unauthorized, try set cookie first');
+				throw new Error('Unauthorized, try set cookie/session id first');
 			} else if (error.request) {
 				throw new Error(error.request);
 			} else {
@@ -241,7 +243,7 @@ export class igApi {
 	}
 
 	public fetchPost = async (url: url): Promise<IPostModels> => {
-		if (!this.session_id) throw new Error('set cookie first to use this function');
+		if (!this.session_id) throw new Error('set cookie/session id first to use this function');
 		const post = shortcodeFormatter(url);
 		
 		//const req = (await IGFetchDesktop.get(`/${post.type}/${post.shortcode}/?__a=1`))
@@ -274,9 +276,9 @@ export class igApi {
 				if (error.response?.status == 404) {
 					throw new Error('Post Not Found');
 				} else if (error.response?.status == 403) {
-					throw new Error('Forbidden, try set cookie first');
+					throw new Error('Forbidden, try set cookie/session id first');
 				} else if (error.response?.status == 401) {
-					throw new Error('Unauthorized, try set cookie first');
+					throw new Error('Unauthorized, try set cookie/session id first');
 				} else {
 					throw error.toJSON()
 				}
@@ -301,8 +303,8 @@ export class igApi {
 			);
 			const graphql: UserGraphQL = data;
 			const isSet: boolean = typeof graphql.user.full_name !== 'undefined';
-			if (!this.session_id) throw new Error('set cookie first to use this function');
-			if (!isSet && this.cookie.check()) throw new Error('Invalid cookie, pls update with new cookie');
+			if (!this.session_id) throw new Error('set cookie/session id first to use this function');
+			if (!isSet && this.cookie.check()) throw new Error('Invalid cookie/session id, pls update with new cookie/session id');
 			return {
 				id: graphql.user.pk,
 				username: graphql.user.username,
@@ -329,9 +331,9 @@ export class igApi {
 				if (error.response?.status == 404) {
 					throw new Error('User Not Found');
 				} else if (error.response?.status == 403) {
-					throw new Error('Forbidden, try set cookie first');
+					throw new Error('Forbidden, try set cookie/session id first');
 				} else if (error.response?.status == 401) {
-					throw new Error('Unauthorized, try set cookie first');
+					throw new Error('Unauthorized, try set cookie/session id first');
 				} else {
 					throw error.toJSON()
 				}
@@ -351,9 +353,9 @@ export class igApi {
 				if (error.response?.status == 404) {
 					throw new Error('User Not Found');
 				} else if (error.response?.status == 403) {
-					throw new Error('Forbidden, try set cookie first');
+					throw new Error('Forbidden, try set cookie/session id first');
 				} else if (error.response?.status == 401) {
-					throw new Error('Unauthorized, try set cookie first');
+					throw new Error('Unauthorized, try set cookie/session id first');
 				} else {
 					throw error.toJSON()
 				}
@@ -430,7 +432,7 @@ export class igApi {
 	 */
 	public fetchStories = async(username: username): Promise<IGStoriesMetadata> => {
 		try {
-			if (!this.session_id) throw new Error('set cookie first to use this function');
+			if (!this.session_id) throw new Error('set cookie/session id first to use this function');
 			const userID = await this.getIdByUsername(username);
 			//const { data } = await IGStories.get(`/${userID}/reel_media/`);
 			const { data } = await this.FetchIGAPI(
@@ -455,9 +457,9 @@ export class igApi {
 				if (error.response?.status == 404) {
 					throw new Error('Stories Not Found');
 				} else if (error.response?.status == 403) {
-					throw new Error('Forbidden, try set cookie first');
+					throw new Error('Forbidden, try set cookie/session id first');
 				} else if (error.response?.status == 401) {
-					throw new Error('Unauthorized, try set cookie first');
+					throw new Error('Unauthorized, try set cookie/session id first');
 				} else {
 					throw error.toJSON()
 				}
@@ -499,9 +501,9 @@ export class igApi {
 				if (error.response?.status == 404) {
 					throw new Error('Post Not Found');
 				} else if (error.response?.status == 403) {
-					throw new Error('Forbidden, try set cookie first');
+					throw new Error('Forbidden, try set cookie/session id first');
 				} else if (error.response?.status == 401) {
-					throw new Error('Unauthorized, try set cookie first');
+					throw new Error('Unauthorized, try set cookie/session id first');
 				} else {
 					throw error.toJSON()
 				}
@@ -541,9 +543,9 @@ export class igApi {
 				if (error.response?.status == 404) {
 					throw new Error('Post Not Found');
 				} else if (error.response?.status == 403) {
-					throw new Error('Forbidden, try set cookie first');
+					throw new Error('Forbidden, try set cookie/session id first');
 				} else if (error.response?.status == 401) {
-					throw new Error('Unauthorized, try set cookie first');
+					throw new Error('Unauthorized, try set cookie/session id first');
 				} else {
 					throw error.toJSON()
 				}
@@ -560,7 +562,7 @@ export class igApi {
 	 */
 	public fetchHighlights = async(username: username): Promise<IHighlightsMetadata> => {
 		try {
-			if (!this.session_id) throw new Error('set cookie first to use this function');
+			if (!this.session_id) throw new Error('set cookie/session id first to use this function');
 			const ids = await this._getReelsIds(username);
 			const reels = await Promise.all(ids.map(x => this._getReels(x.highlight_id)))
 
@@ -650,7 +652,9 @@ export class igApi {
 	 * @returns 
 	 */
 	public addPost = async(photo: string | Buffer, type: 'feed' | 'story' = 'feed', options: MediaConfigureOptions): Promise<PostFeedResult|PostStoryResult> =>{
-		if (!this.session_id) throw new Error('set cookie first to use this function');
+		if (!this.session_id) {
+			throw new Error('set cookie/session id first to use this function');
+		}
         try{
             const dateObj = new Date()
             const now = dateObj
@@ -691,7 +695,7 @@ export class igApi {
 				'sec-fetch-dest': 'empty',
 				'referer': 'https://www.instagram.com/create/details/',
                 'accept-language': 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
-				'cookie': `sessionid=${this.cookie.get() || this.session_id};`,
+				'cookie': `sessionid=${(this.useStoredCookie && this.cookie.get()) || this.session_id};`,
             }
 			//let payload = `upload_id=${responseUpload.upload_id}&caption=${caption}&usertags=&custom_accessibility_caption=&retry_timeout=`
 
