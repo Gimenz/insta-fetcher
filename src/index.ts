@@ -33,9 +33,11 @@ export class igApi {
 	 * Recommended to set session id for most all IG Request
 	 * @param session_id session id you can get it by using getSessionId function, see README.md or example file
 	 */
-	constructor(public session_id: session_id = '') {
+	constructor(public session_id: session_id = '', storeCookie: boolean = true) {
 		this.session_id = session_id;
-		this.setCookie(this.session_id);
+		if (storeCookie) {
+			this.setCookie(this.session_id);
+		}
 	}
 	private cookie = new CookieHandler(this.session_id)
 
@@ -285,6 +287,37 @@ export class igApi {
 			}			
 		}
 	}
+
+	/**
+	 * fetch client account profile  
+	 */
+	 public accountInfo = async (userID: number | string = this.session_id.split('%')[0]): Promise<UserGraphQL> => {
+		try {
+			const { data } = await this.FetchIGAPI(
+				config.instagram_user_url,
+				`/${userID}/info/`
+			);
+			const graphql: UserGraphQL = data;
+			
+			if (!this.session_id) throw new Error('set cookie first to use this function');
+			return graphql
+		} catch (error: any | AxiosError) {
+			console.log(error);
+			if (axios.isAxiosError(error)) {
+				if (error.response?.status == 404) {
+					throw new Error('User Not Found');
+				} else if (error.response?.status == 403) {
+					throw new Error('Forbidden, try set cookie first');
+				} else if (error.response?.status == 401) {
+					throw new Error('Unauthorized, try set cookie first');
+				} else {
+					throw error.toJSON()
+				}
+			} else {
+				throw error;
+			}
+		}
+	}	
 
 	/**
 	 * fetch profile by username. including email, phone number 

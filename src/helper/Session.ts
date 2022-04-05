@@ -1,5 +1,4 @@
-import axios, { AxiosRequestHeaders, AxiosResponse } from "axios";
-import { AxiosError } from "axios";
+import axios, { AxiosRequestHeaders, AxiosResponse, AxiosError } from "axios";
 import { config } from "../config";
 import { csrfToken, password, session_id, username } from "../types";
 
