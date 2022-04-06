@@ -32,10 +32,11 @@ export class igApi {
 	/**
 	 * Recommended to set session id for most all IG Request
 	 * @param session_id session id you can get it by using getSessionId function, see README.md or example file
+	 * @param storeCookie
 	 */
-	constructor(public session_id: session_id = '', storeCookie: boolean = true) {
+	constructor(public session_id: session_id = '', public storeCookie: boolean = true) {
 		this.session_id = session_id;
-		if (storeCookie) {
+		if (this.storeCookie) {
 			this.setCookie(this.session_id);
 		}
 	}
@@ -44,7 +45,7 @@ export class igApi {
 	private buildHeaders = (agent: string = config.android, options?: any) => {
 		return {
 			'user-agent': agent,
-			'cookie': `sessionid=${this.cookie.get() || this.session_id};`,
+			'cookie': `sessionid=${this.storeCookie && this.cookie.get() || this.session_id};`,
 			'authority': 'www.instagram.com',
             'content-type': 'application/x-www-form-urlencoded',
             'origin': 'https://www.instagram.com',
@@ -724,7 +725,7 @@ export class igApi {
 				'sec-fetch-dest': 'empty',
 				'referer': 'https://www.instagram.com/create/details/',
                 'accept-language': 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
-				'cookie': `sessionid=${this.cookie.get() || this.session_id};`,
+				'cookie': `sessionid=${this.storeCookie && this.cookie.get() || this.session_id};`,
             }
 			//let payload = `upload_id=${responseUpload.upload_id}&caption=${caption}&usertags=&custom_accessibility_caption=&retry_timeout=`
 
