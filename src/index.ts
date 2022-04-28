@@ -3,27 +3,25 @@
  * Modified, Updated at Minggu, 20 Februari 2022
  */
 
-import axios, { AxiosError, AxiosRequestConfig } from 'axios';
-import { getPostType, randInt, shortcodeFormatter } from './utils/index';
+import fs from 'fs'
+import FormData from 'form-data';
+import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
+import { bufferToStream, getPostType, randInt, shortcodeFormatter } from './utils/index';
 import { CookieHandler } from './helper/CookieHandler';
-import { username, url, session_id, ProductType, MediaType } from './types';
+import { username, url, session_id, ProductType, MediaType, IChangedProfilePicture } from './types';
 import { IGUserMetadata, UserGraphQL } from './types/UserMetadata';
-import {
-	IGStoriesMetadata,
-	ItemStories,
-	StoriesGraphQL,
-} from './types/StoriesMetadata';
+import { IGStoriesMetadata, ItemStories, StoriesGraphQL } from './types/StoriesMetadata';
 import { highlight_ids_query, highlight_media_query } from './helper/query';
 import { HightlighGraphQL, ReelsIds } from './types/HighlightMetadata';
 import { HMedia, IHighlightsMetadata, IReelsMetadata, ReelsMediaData } from './types/HighlightMediaMetadata';
 import { IPostModels, IRawBody, MediaUrls } from './types/PostModels';
 import { config } from './config';
-import fs from 'fs'
 import { getCsrfToken } from './helper/Session';
 import { PostFeedResult } from './types/PostFeedResult';
 import { PostStoryResult } from './types/PostStoryResult';
 import { MediaConfigureOptions } from './types/MediaConfigureOptions';
 import { GraphqlUser, UserGraphQLV2 } from './types/UserGraphQlV2';
+import { IPaginatedPosts } from './types/PaginatedPosts';
 
 export * from './utils'
 export * as InstagramMetadata from './types'
@@ -34,7 +32,7 @@ export class igApi {
 	 * @param session_id session id you can get it by using getSessionId function, see README.md or example file
 	 * @param storeCookie
 	 */
-	constructor(public session_id: session_id = '', public storeCookie: boolean = true) {
+	constructor(private session_id: session_id = '', public storeCookie: boolean = true) {
 		this.session_id = session_id;
 		if (this.storeCookie) {
 			this.setCookie(this.session_id);
@@ -61,22 +59,34 @@ export class igApi {
 		};
 	}
 
-	/** Make request to IG API */
-	private FetchIGAPI = (baseURL: string, url: string = '', agent: string = config.android, options: AxiosRequestConfig = {}) => {
-		return axios({
-			baseURL,
-			url,
-			headers: options.headers ? options.headers : this.buildHeaders(agent),
-			method: options.method || 'GET',
-			...options
-		});
+	/**
+	 * Make request to IG API
+	 * @param baseURL 
+	 * @param url 
+	 * @param agent 
+	 * @param options 
+	 */
+	private FetchIGAPI = (baseURL: string, url: string = '', agent: string = config.android, options: AxiosRequestConfig = {}): Promise<AxiosResponse> | undefined => {
+		try {
+			return axios({
+				baseURL,
+				url,
+				headers: options.headers ? options.headers : this.buildHeaders(agent),
+				method: options.method || 'GET',
+				...options
+			});
+		} catch (error: any | AxiosError) {
+			if (axios.isAxiosError(error)) {
+				throw error.response
+			}
+		}
 	}
 	
 	/**
 	 * Set session id for most all IG Request
 	 * @param {session_id} session_id
 	 */
-	public setCookie = (session_id: session_id = this.session_id) => {
+	private setCookie = (session_id: session_id = this.session_id) => {
 		try {
 			if (!this.cookie.check()) {
 				this.cookie.save(session_id);
@@ -84,7 +94,7 @@ export class igApi {
 				this.cookie.update(session_id);
 			}
 		} catch (error: any) {
-			throw new Error(error.message);
+			throw error;
 		}
 	}
 	/**
@@ -93,24 +103,12 @@ export class igApi {
 	 * @returns
 	 */
 	public getIdByUsername = async (username: username): Promise<string> => {
-		try {
-			const { data } = await this.FetchIGAPI(
-				config.instagram_base_url,
-				`/${username}/?__a=1`, 
-				config.iPhone,
-			);
-			return data.graphql.user.id;
-		} catch (error: any) {
-			if (error.response.status == 403) {
-				throw new Error('Forbidden, try set cookie first');
-			} else if (error.response.status == 401) {
-				throw new Error('Unauthorized, try set cookie first');
-			} else if (error.request) {
-				throw new Error(error.request);
-			} else {
-				throw new Error(error.message);
-			}
-		}
+		const res = await this.FetchIGAPI(
+			config.instagram_base_url,
+			`/${username}/?__a=1`, 
+			config.iPhone,
+		);
+		return res?.data.graphql.user.id || res
 	}
 
 	// /**
@@ -248,44 +246,28 @@ export class igApi {
 		const post = shortcodeFormatter(url);
 		
 		//const req = (await IGFetchDesktop.get(`/${post.type}/${post.shortcode}/?__a=1`))
-		const req = await this.FetchIGAPI(
+		const res = await this.FetchIGAPI(
 			config.instagram_base_url, 
 			`/${post.type}/${post.shortcode}/?__a=1`,
 			config.desktop
 		)
 
-		const metadata: IRawBody = req.data
+		const metadata: IRawBody = res?.data
 		const item = metadata.items[0]
-		try {
-			return {
-				username: item.user.username,
-				name: item.user.full_name,
-				postType: getPostType(item.product_type),
-				media_id: item.id,
-				shortcode: item.code,
-				taken_at_timestamp: item.taken_at,
-				likes: item.like_count,
-				caption: item.caption?.text || null,
-				media_count: item.product_type == ProductType.CAROUSEL ? item.carousel_media_count : 1,
-				comment_count: item.comment_count,
-				video_duration: item?.video_duration || null,
-				music: item?.clips_metadata || null,
-				links: this._formatSidecar(metadata),
-			}
-		} catch (error: any | AxiosError) {
-			if (axios.isAxiosError(error)) {
-				if (error.response?.status == 404) {
-					throw new Error('Post Not Found');
-				} else if (error.response?.status == 403) {
-					throw new Error('Forbidden, try set cookie first');
-				} else if (error.response?.status == 401) {
-					throw new Error('Unauthorized, try set cookie first');
-				} else {
-					throw error.toJSON()
-				}
-			} else {
-				throw error;
-			}			
+		return {
+			username: item.user.username,
+			name: item.user.full_name,
+			postType: getPostType(item.product_type),
+			media_id: item.id,
+			shortcode: item.code,
+			taken_at_timestamp: item.taken_at,
+			likes: item.like_count,
+			caption: item.caption?.text || null,
+			media_count: item.product_type == ProductType.CAROUSEL ? item.carousel_media_count : 1,
+			comment_count: item.comment_count,
+			video_duration: item?.video_duration || null,
+			music: item?.clips_metadata || null,
+			links: this._formatSidecar(metadata),
 		}
 	}
 
@@ -293,31 +275,14 @@ export class igApi {
 	 * fetch client account profile  
 	 */
 	 public accountInfo = async (userID: number | string = this.session_id.split('%')[0]): Promise<UserGraphQL> => {
-		try {
-			const { data } = await this.FetchIGAPI(
-				config.instagram_user_url,
-				`/${userID}/info/`
-			);
-			const graphql: UserGraphQL = data;
-			
-			if (!this.session_id) throw new Error('set cookie first to use this function');
-			return graphql
-		} catch (error: any | AxiosError) {
-			console.log(error);
-			if (axios.isAxiosError(error)) {
-				if (error.response?.status == 404) {
-					throw new Error('User Not Found');
-				} else if (error.response?.status == 403) {
-					throw new Error('Forbidden, try set cookie first');
-				} else if (error.response?.status == 401) {
-					throw new Error('Unauthorized, try set cookie first');
-				} else {
-					throw error.toJSON()
-				}
-			} else {
-				throw error;
-			}
-		}
+		const res = await this.FetchIGAPI(
+			config.instagram_user_url,
+			`/${userID}/info/`
+		);
+		const graphql: UserGraphQL = res?.data;
+		
+		if (!this.session_id) throw new Error('set cookie first to use this function');
+		return graphql
 	}	
 
 	/**
@@ -326,75 +291,43 @@ export class igApi {
 	 * @returns {Promise<IGUserMetadata>}
 	 */
 	public fetchUser = async (username: username): Promise<IGUserMetadata> => {
-		try {
-			const userID = await this.getIdByUsername(username);
-			// const { data } = await IGUser.get(`/${userID}/info/`);
-			const { data } = await this.FetchIGAPI(
-				config.instagram_user_url,
-				`/${userID}/info/`
-			);
-			const graphql: UserGraphQL = data;
-			const isSet: boolean = typeof graphql.user.full_name !== 'undefined';
-			if (!this.session_id) throw new Error('set cookie first to use this function');
-			if (!isSet && this.cookie.check()) throw new Error('Invalid cookie, pls update with new cookie');
-			return {
-				id: graphql.user.pk,
-				username: graphql.user.username,
-				fullname: graphql.user.full_name,
-				followers: graphql.user.follower_count,
-				following: graphql.user.following_count,
-				post_count: graphql.user.media_count,
-				is_private: graphql.user.is_private,
-				is_verified: graphql.user.is_verified,
-				biography: graphql.user.biography,
-				external_url: graphql.user.external_url,
-				total_igtv_videos: graphql.user.total_igtv_videos,
-				has_videos: graphql.user.has_videos,
-				hd_profile_pic_url_info: graphql.user.hd_profile_pic_url_info,
-				has_highlight_reels: graphql.user.has_highlight_reels,
-				has_guides: graphql.user.has_guides,
-				is_business: graphql.user.is_business,
-				contact_phone_number: graphql.user.contact_phone_number,
-				public_email: graphql.user.public_email,
-				account_type: graphql.user.account_type,
-			};
-		} catch (error: any | AxiosError) {
-			if (axios.isAxiosError(error)) {
-				if (error.response?.status == 404) {
-					throw new Error('User Not Found');
-				} else if (error.response?.status == 403) {
-					throw new Error('Forbidden, try set cookie first');
-				} else if (error.response?.status == 401) {
-					throw new Error('Unauthorized, try set cookie first');
-				} else {
-					throw error.toJSON()
-				}
-			} else {
-				throw error;
-			}
-		}
+		const userID = await this.getIdByUsername(username);
+		// const { data } = await IGUser.get(`/${userID}/info/`);
+		const res = await this.FetchIGAPI(
+			config.instagram_user_url,
+			`/${userID}/info/`
+		);
+		const graphql: UserGraphQL = res?.data;
+		const isSet: boolean = typeof graphql.user.full_name !== 'undefined';
+		if (!this.session_id) throw new Error('set cookie first to use this function');
+		if (!isSet && this.cookie.check()) throw new Error('Invalid cookie, pls update with new cookie');
+		return {
+			id: graphql.user.pk,
+			username: graphql.user.username,
+			fullname: graphql.user.full_name,
+			followers: graphql.user.follower_count,
+			following: graphql.user.following_count,
+			post_count: graphql.user.media_count,
+			is_private: graphql.user.is_private,
+			is_verified: graphql.user.is_verified,
+			biography: graphql.user.biography,
+			external_url: graphql.user.external_url,
+			total_igtv_videos: graphql.user.total_igtv_videos,
+			has_videos: graphql.user.has_videos,
+			hd_profile_pic_url_info: graphql.user.hd_profile_pic_url_info,
+			has_highlight_reels: graphql.user.has_highlight_reels,
+			has_guides: graphql.user.has_guides,
+			is_business: graphql.user.is_business,
+			contact_phone_number: graphql.user.contact_phone_number,
+			public_email: graphql.user.public_email,
+			account_type: graphql.user.account_type,
+		};
 	}
 
 	public fetchUserV2 = async (username: username) => {
-		try {
-			const { data } = await this.FetchIGAPI(config.instagram_base_url, `/${username}/?__a=1`);
-			const {graphql}: UserGraphQLV2 = data;
-			return graphql.user as GraphqlUser;
-		} catch (error: any | AxiosError) {
-			if (axios.isAxiosError(error)) {
-				if (error.response?.status == 404) {
-					throw new Error('User Not Found');
-				} else if (error.response?.status == 403) {
-					throw new Error('Forbidden, try set cookie first');
-				} else if (error.response?.status == 401) {
-					throw new Error('Unauthorized, try set cookie first');
-				} else {
-					throw error.toJSON()
-				}
-			} else {
-				throw error;
-			}
-		}
+		const res = await this.FetchIGAPI(config.instagram_base_url, `/${username}/?__a=1`);
+		const { graphql }: UserGraphQLV2 = res?.data;
+		return graphql.user as GraphqlUser;
 	}
 
 	/**
@@ -463,42 +396,26 @@ export class igApi {
 	 * @returns
 	 */
 	public fetchStories = async(username: username): Promise<IGStoriesMetadata> => {
-		try {
-			if (!this.session_id) throw new Error('set cookie first to use this function');
-			const userID = await this.getIdByUsername(username);
-			//const { data } = await IGStories.get(`/${userID}/reel_media/`);
-			const { data } = await this.FetchIGAPI(
-				config.instagram_stories_url,
-				`/${userID}/reel_media/`,
-				config.iPhone
-			);
-			const graphql: StoriesGraphQL = data;
-			const isFollowing: boolean =
-				typeof graphql.user.friendship_status !== 'undefined';
+		if (!this.session_id) throw new Error('set cookie first to use this function');
+		const userID = await this.getIdByUsername(username);
+		//const { data } = await IGStories.get(`/${userID}/reel_media/`);
+		const res = await this.FetchIGAPI(
+			config.instagram_stories_url,
+			`/${userID}/reel_media/`,
+			config.iPhone
+		);
+		const graphql: StoriesGraphQL = res?.data;
+		const isFollowing: boolean =
+			typeof graphql.user.friendship_status !== 'undefined';
 
-			if (!isFollowing && graphql.user.is_private)
-				throw new Error('Private profile');
-			if (graphql.items.length == 0) throw new Error('Stories not available');
-			return {
-				username: graphql.user.username,
-				stories_count: graphql.media_count,
-				stories: this._parseStories(graphql),
-			};
-		} catch (error: any | AxiosError) {
-			if (axios.isAxiosError(error)) {
-				if (error.response?.status == 404) {
-					throw new Error('Stories Not Found');
-				} else if (error.response?.status == 403) {
-					throw new Error('Forbidden, try set cookie first');
-				} else if (error.response?.status == 401) {
-					throw new Error('Unauthorized, try set cookie first');
-				} else {
-					throw error.toJSON()
-				}
-			} else {
-				throw error;
-			}
-		}
+		if (!isFollowing && graphql.user.is_private)
+			throw new Error('Private profile');
+		if (graphql.items.length == 0) throw new Error('Stories not available');
+		return {
+			username: graphql.user.username,
+			stories_count: graphql.media_count,
+			stories: this._parseStories(graphql),
+		};
 	}
 
 	/**
@@ -507,42 +424,26 @@ export class igApi {
 	 * @returns 
 	 */
 	private _getReelsIds = async (username: username): Promise<ReelsIds[]> => {
-		try {
-			const userID: string = await this.getIdByUsername(username);
-			// const { data } = await IGHighlight.get('', {
-			// 	params: highlight_ids_query(userID)
-			// })
-			const { data } = await this.FetchIGAPI(
-				config.instagram_graphql,
-				'',
-				config.iPhone,
-				{ params: highlight_ids_query(userID)}
-			)
-			const graphql: HightlighGraphQL = data;
-			let items = new Array();
-			graphql.data.user.edge_highlight_reels.edges.map((edge) => {
-				items.push({
-					highlight_id: edge.node.id,
-					cover: edge.node.cover_media.thumbnail_src,
-					title: edge.node.title
-				})
-			})		
-			return items;
-		} catch (error: any | AxiosError) {
-			if (axios.isAxiosError(error)) {
-				if (error.response?.status == 404) {
-					throw new Error('Post Not Found');
-				} else if (error.response?.status == 403) {
-					throw new Error('Forbidden, try set cookie first');
-				} else if (error.response?.status == 401) {
-					throw new Error('Unauthorized, try set cookie first');
-				} else {
-					throw error.toJSON()
-				}
-			} else {
-				throw error;
-			}
-		}	
+		const userID: string = await this.getIdByUsername(username);
+		// const { data } = await IGHighlight.get('', {
+		// 	params: highlight_ids_query(userID)
+		// })
+		const res = await this.FetchIGAPI(
+			config.instagram_graphql,
+			'',
+			config.iPhone,
+			{ params: highlight_ids_query(userID)}
+		)
+		const graphql: HightlighGraphQL = res?.data;
+		let items = new Array();
+		graphql.data.user.edge_highlight_reels.edges.map((edge) => {
+			items.push({
+				highlight_id: edge.node.id,
+				cover: edge.node.cover_media.thumbnail_src,
+				title: edge.node.title
+			})
+		})		
+		return items;	
 	}
 
 	/**
@@ -551,15 +452,14 @@ export class igApi {
 	 * @returns 
 	 */
 	private _getReels = async (ids: string): Promise<ReelsMediaData[]> => {
-		try {
 			// const { data } = await IGHighlight.get('', { params: highlight_media_query(ids) })
-			const { data } = await this.FetchIGAPI(
+			const res = await this.FetchIGAPI(
 				config.instagram_graphql,
 				'',
 				config.iPhone,
 				{ params: highlight_media_query(ids) }
 			)
-			const graphql: HMedia = data;
+			const graphql: HMedia = res?.data;
 			let result: ReelsMediaData[] = graphql.data.reels_media[0].items.map((item) => ({
 				media_id: item.id,
 				mimetype: item.is_video ? 'video/mp4' || 'video/gif' : 'image/jpeg',
@@ -569,22 +469,7 @@ export class igApi {
 				dimensions : item.dimensions
 			}))
 			
-			return result;
-		} catch (error: any | AxiosError) {
-			if (axios.isAxiosError(error)) {
-				if (error.response?.status == 404) {
-					throw new Error('Post Not Found');
-				} else if (error.response?.status == 403) {
-					throw new Error('Forbidden, try set cookie first');
-				} else if (error.response?.status == 401) {
-					throw new Error('Unauthorized, try set cookie first');
-				} else {
-					throw error.toJSON()
-				}
-			} else {
-				throw error;
-			}
-		}		
+			return result;	
 	}
 
 	/**
@@ -618,6 +503,25 @@ export class igApi {
 		} catch (error: any) {
 			throw error
 		}
+	}
+
+	/**
+	 * fetches user posts, with pagination
+	 * @param username 
+	 * @param end_cursor get end_cursor by fetch user posts first
+	 * @returns 
+	 */
+	public fetchUserPosts = async (username: username, end_cursor = ''): Promise<IPaginatedPosts> => {
+		const userId = await this.getIdByUsername(username);
+		const params = {
+			'query_id': '17880160963012870',
+			'id': userId,
+			'first': 12,
+			'after': end_cursor
+		}
+		const res = await this.FetchIGAPI(config.instagram_graphql, '', config.android, { params })
+
+		return res?.data?.data.user.edge_owner_to_timeline_media
 	}
 
 	private uploadPhoto = async(photo: string | Buffer) => {
@@ -670,7 +574,7 @@ export class igApi {
 				config.android,
 				{ headers: headersPhoto, data: file, method: 'POST' }
 			);
-			return result.data
+			return result?.data
 		} catch (error) {
 			throw error
 		}
@@ -678,7 +582,7 @@ export class igApi {
 
 	/**
 	 * Post a photo to instagram
-	 * @param photo 
+	 * @param photo file path or Buffer
 	 * @param type post type
 	 * @param options 
 	 * @returns 
@@ -736,9 +640,35 @@ export class igApi {
 				{ data: new URLSearchParams(Object.entries(payloadForm)).toString(), method: 'POST', headers: headers}
 			);
 			
-            return result.data
+            return result?.data
         } catch (error: any){
             throw error
         }
     }
+
+	/**
+	 * 
+	 * @param photo input must be filepath or buffer
+	 */
+	public changeProfilePicture = async (photo: string | Buffer): Promise<IChangedProfilePicture> => {
+		const media = Buffer.isBuffer(photo) ? bufferToStream(photo) : fs.createReadStream(photo)
+
+		const form = new FormData();
+		form.append('profile_pic', media, 'profilepic.jpg')
+
+		const headers = this.buildHeaders(
+			config.desktop, 
+			{
+				'X-CSRFToken': await getCsrfToken(),
+				...form.getHeaders()
+			}
+		)
+		const result = await this.FetchIGAPI(config.instagram_base_url, '/accounts/web_change_profile_picture/', config.desktop, {
+			method: 'post',
+			data: form,
+			headers
+		})
+
+		return result?.data
+	}
 }

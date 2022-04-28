@@ -1,3 +1,4 @@
+import { Readable } from 'stream';
 import { formattedShortcode, IGPostType, postType, ProductType } from '../types/index';
 
 /** Instagram post regex */
@@ -46,4 +47,13 @@ export const getPostType = (type: string): postType => {
 /** get random number in range */
 export const randInt = (min: number, max: number, q = 0.001): number => {
     return Math.floor((Math.random() * (min - max)) / q) * q
+}
+
+// https://stackoverflow.com/questions/13230487/converting-a-buffer-into-a-readablestream-in-node-js
+export const bufferToStream = (buffer: Buffer) => {
+    const readable = new Readable()
+    readable._read = () => { } // _read is required but you can noop it
+    readable.push(buffer)
+    readable.push(null)
+    return readable
 }

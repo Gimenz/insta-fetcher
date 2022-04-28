@@ -8,6 +8,7 @@ export * from './PostStoryResult'
 export * from './StoriesMetadata'
 export * from './UserGraphQlV2'
 export * from './UserMetadata'
+export * from './PaginatedPosts'
 
 /** instagram username */
 export type username = string;
@@ -53,4 +54,13 @@ export interface formattedShortcode {
 	type: postType | string,
 	shortcode: string;
 	url: string;
+}
+
+export interface IChangedProfilePicture {
+	changed_profile: boolean
+	id: number,
+	has_profile_pic: boolean,
+	profile_pic_url: string
+	profile_pic_url_hd: string
+	status: string
 }
