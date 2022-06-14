@@ -34,7 +34,7 @@ export interface PostGraphQL {
 	shortcode_media: ShortcodeMedia;
 }
 
-export interface ShortcodeMedia {
+export interface ShortcodeMedia extends ViewerInfo {
 	[x: string]: any;
 	__typename: string;
 	id: string;
@@ -70,11 +70,6 @@ export interface ShortcodeMedia {
 	is_affiliate: boolean;
 	is_paid_partnership: boolean;
 	location: null;
-	viewer_has_liked: boolean;
-	viewer_has_saved: boolean;
-	viewer_has_saved_to_collection: boolean;
-	viewer_in_photo_of_you: boolean;
-	viewer_can_reshare: boolean;
 	owner: ShortcodeMediaOwner;
 	is_ad: boolean;
 	edge_web_media_to_related_media: EdgeMediaToCaptionClass;
@@ -93,6 +88,14 @@ export interface ShortcodeMedia {
 	video_duration: number;
 	thumbnail_src: string;
 	clips_music_attribution_info: null;
+}
+
+export interface ViewerInfo {
+	viewer_has_liked: boolean;
+	viewer_has_saved: boolean;
+	viewer_has_saved_to_collection: boolean;
+	viewer_in_photo_of_you: boolean;
+	viewer_can_reshare: boolean;
 }
 
 export interface DashInfo {
@@ -126,13 +129,12 @@ export interface EdgeMediaToParentCommentClass {
 	edges: EdgeMediaPreviewCommentEdge[];
 }
 
-export interface PurpleNode {
+export interface PurpleNode extends ViewerInfo {
 	__typename: Typename;
 	id: string;
 	text: string;
 	created_at: number;
 	did_report_as_spam: boolean;
-	viewer_has_liked: boolean;
 	edge_liked_by: EdgeFollowedByClass;
 	is_restricted_pending: boolean;
 	edge_threaded_comments?: EdgeMediaToParentCommentClass;
@@ -143,6 +145,7 @@ export interface PurpleNode {
 	fact_check_overall_rating: null;
 	fact_check_information: null;
 	gating_info: null;
+	sensitivity_friction_info: any;
 	sharing_friction_info: SharingFrictionInfo;
 	media_overlay_info: null;
 	media_preview: null | string;
@@ -168,6 +171,11 @@ export interface PurpleNode {
 	product_type?: string;
 	clips_music_attribution_info?: ClipsMusicAttributionInfo;
 	edge_sidecar_to_children?: EdgeSidecarToChildren;
+	pinned_for_users: any[];
+	nft_asset_info: any;
+	edge_media_to_sponsor_user: EdgeMediaToCaptionClass;
+	is_affiliate: boolean;
+	is_paid_partnership: boolean;
 }
 
 export interface EdgeMediaPreviewCommentEdge {
