@@ -438,6 +438,7 @@ export class igApi {
 
 	/**
 	 * fetches user posts, with pagination
+	 * @deprecated Does not return all information about a post
 	 * @param username 
 	 * @param end_cursor get end_cursor by fetch user posts first
 	 * @returns 
