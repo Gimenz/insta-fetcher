@@ -2,13 +2,13 @@ import axios, { AxiosRequestHeaders, AxiosResponse, AxiosError } from "axios";
 import { config } from "../config";
 import { csrfToken, password, session_id, username } from "../types";
 
-export const getCsrfToken = async(): Promise<csrfToken> => {
+export const getCsrfToken = async (): Promise<csrfToken> => {
     try {
         const { headers } = await axios({
             method: 'GET',
             url: 'https://www.instagram.com/accounts/login/'
         });
-        let csrfToken: csrfToken = headers["set-cookie"]?.find(x => x.match(/csrftoken=(.*?);/)?.[1])?.match(/csrftoken=(.*?);/)?.[1] || '';      
+        let csrfToken: csrfToken = headers["set-cookie"]?.find(x => x.match(/csrftoken=(.*?);/)?.[1])?.match(/csrftoken=(.*?);/)?.[1] || '';
         return csrfToken
     } catch (error) {
         throw error
@@ -46,22 +46,22 @@ export const getSessionId = async (username: username, password: password): Prom
             'x-requested-with': 'XMLHttpRequest',
             'Cookie': 'csrftoken=' + csrfToken + ';'
         }
-    
+
         const { headers, data }: AxiosResponse = await axios({
             method: 'POST',
             url: 'https://www.instagram.com/accounts/login/ajax/',
-            data: `username=${username}&enc_password=#PWD_INSTAGRAM_BROWSER:0:${Date.now()}:${password}&queryParams=%7B%22source%22%3A%22auth_switcher%22%7D&optIntoOneTap=false`,
+            data: `username=${username}&enc_password=#PWD_INSTAGRAM_BROWSER:0:${Date.now()}:${encodeURIComponent(password)}&queryParams=%7B%22source%22%3A%22auth_switcher%22%7D&optIntoOneTap=false`,
             headers: genHeaders
         });
-    
+
         const { userId: userID, authenticated } = (data);
-        if (authenticated) {           
-            let session_id: session_id = headers["set-cookie"]?.find(x => x.match(/sessionid=(.*?);/)?.[1])?.match(/sessionid=(.*?);/)?.[1] || '';
+        if (authenticated) {
+            let session_id: session_id = headers['set-cookie']?.map(x => x.match(/(.*?=.*?);/)?.[1])?.join('; ') || '';
             return session_id;
         } else {
             throw new Error('Username or password is incorrect. Please check and try again');
         }
-    } catch (error: any | AxiosError) {
+    } catch (error) {
         if (axios.isAxiosError(error)) {
             throw error.toJSON()
         } else {

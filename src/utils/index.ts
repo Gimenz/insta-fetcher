@@ -1,5 +1,37 @@
 import { Readable } from 'stream';
 import { formattedShortcode, IGPostType, postType, ProductType } from '../types/index';
+import bigInt from 'big-integer';
+
+// https://stackoverflow.com/questions/16758316/where-do-i-find-the-instagram-media-id-of-a-image
+// https://gist.github.com/sclark39/9daf13eea9c0b381667b61e3d2e7bc11
+const lower = 'abcdefghijklmnopqrstuvwxyz';
+const upper = lower.toUpperCase();
+const numbers = '0123456789'
+const ig_alphabet = upper + lower + numbers + '-_'
+const bigint_alphabet = numbers + lower
+
+/**
+ * convert instagram shortcode into media_id
+ * @param shortcode 
+ * @returns 
+ */
+export const shortcodeToMediaID = (shortcode: string) => {
+    const o = shortcode.replace(/\S/g, m => {
+        var c = ig_alphabet.indexOf(m)
+        var b = bigint_alphabet.charAt(c)
+        return (b != "") ? b : `<${c}>`
+    })
+    return bigInt(o, 64).toString(10)
+}
+
+export const shortcodeFromMediaID = (media_id: string) => {
+    var o = bigInt(media_id).toString(64)
+    return o.replace(/<(\d+)>|(\w)/g, (m, m1, m2) => {
+        return ig_alphabet.charAt((m1)
+            ? parseInt(m1)
+            : bigint_alphabet.indexOf(m2))
+    });
+}
 
 /** Instagram post regex */
 export const IGPostRegex = /(?:https?:\/\/)?(?:www\.)?(?:instagram\.com(?:\/.+?)?\/(p|reel|tv)\/)([\w-]+)(?:\/)?(\?.*)?$/gim
@@ -14,7 +46,8 @@ export const shortcodeFormatter = (url: string): formattedShortcode => {
     return {
         type: re[1],
         shortcode: re[2],
-        url: 'https://www.instagram.com/' + re[1] + '/' + re[2]
+        url: 'https://www.instagram.com/' + re[1] + '/' + re[2],
+        media_id: shortcodeToMediaID(re[2])
     }
 };
 
@@ -33,15 +66,15 @@ export const isIgPostUrl = (url: string): boolean => {
  * @returns 
  */
 export const getPostType = (type: string): postType => {
-    return type == ProductType.CAROUSEL 
+    return type == ProductType.CAROUSEL
         ? IGPostType.carousel_container
         : type == ProductType.REEL
-        ? IGPostType.clips
-        : type == ProductType.SINGLE
-        ? IGPostType.feed
-        : type == ProductType.TV
-        ? IGPostType.igtv
-        : IGPostType.feed
+            ? IGPostType.clips
+            : type == ProductType.SINGLE
+                ? IGPostType.feed
+                : type == ProductType.TV
+                    ? IGPostType.igtv
+                    : IGPostType.feed
 }
 
 /** get random number in range */

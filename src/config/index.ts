@@ -6,6 +6,8 @@ export const config = {
 	instagram_stories_url: 'https://i.instagram.com/api/v1/feed/user',
 	/** Instagram Api Fetch User Data */
 	instagram_user_url: 'https://i.instagram.com/api/v1/users',
+	/** Instagram Api Fetch media info by media_id */
+	instagram_media_info_url: 'https://i.instagram.com/api/v1/media/{mediaId}/info/',
 	/** Instagram API Search User */
 	instagram_search_url: 'https://www.instagram.com/web/search/topsearch/?query=',
 	/** Instagram GraphQL query */

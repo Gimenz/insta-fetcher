@@ -32,9 +32,9 @@ export enum ProductType {
 }
 
 export enum Typename {
-    GraphImage = "GraphImage",
-    GraphSidecar = "GraphSidecar",
-    GraphVideo = "GraphVideo",
+	GraphImage = "GraphImage",
+	GraphSidecar = "GraphSidecar",
+	GraphVideo = "GraphVideo",
 }
 
 export enum IGPostType {
@@ -44,7 +44,7 @@ export enum IGPostType {
 	'feed' = 'p'
 }
 /** Mime Type */
-export type MimeType = 'image/jpeg' | 'image/png'| 'video/mp4' |'video/gif';
+export type MimeType = 'image/jpeg' | 'image/png' | 'video/mp4' | 'video/gif';
 /** csrf token */
 export type csrfToken = string;
 /** instagram post type */
@@ -54,6 +54,7 @@ export interface formattedShortcode {
 	type: postType | string,
 	shortcode: string;
 	url: string;
+	media_id: number | string
 }
 
 export interface IChangedProfilePicture {
