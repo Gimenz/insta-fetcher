@@ -1,36 +1,36 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { session_id } from '../types';
+import { IgCookie } from '../types';
 
 let DIR: string = path.join(__dirname, '../config/Cookies.txt');
 
 export class CookieHandler {
-	session_id: session_id
-	constructor(session_id: string = '') {
-		this.session_id = session_id;
+	IgCookie: IgCookie
+	constructor(IgCookie: string = '') {
+		this.IgCookie = IgCookie;
 	}
 
 	/**
 	 * save session id to local directory
-	 * @param session_id session id
+	 * @param IgCookie session id
 	 * @returns
 	 */
-	public save = (session_id: string = this.session_id): void =>{
+	public save = (IgCookie: string = this.IgCookie): void => {
 		if (!fs.existsSync(DIR)) {
-			fs.writeFileSync(DIR, session_id, 'utf-8');
+			fs.writeFileSync(DIR, IgCookie, 'utf-8');
 		} else {
-			this.update(session_id)
+			this.update(IgCookie)
 		}
 	}
 
 	/**
 	 * update with new cookie if last cookie got error, e.g account locked mybe
-	 * @param {String} session_id
+	 * @param {String} IgCookie
 	 * @returns
 	 */
-	public update = (session_id: string = this.session_id): void => {
+	public update = (IgCookie: string = this.IgCookie): void => {
 		if (fs.existsSync(DIR)) {
-			fs.writeFileSync(DIR, session_id, 'utf-8');
+			fs.writeFileSync(DIR, IgCookie, 'utf-8');
 		} else {
 			throw new Error(
 				"Cookie hasn't been saved before, save cookie first using save()"
@@ -52,8 +52,8 @@ export class CookieHandler {
 	 */
 	public get = (): string => {
 		let data: string = this.check()
-			? fs.readFileSync(DIR, 'utf-8').toString() || this.session_id
-			: this.session_id;
+			? fs.readFileSync(DIR, 'utf-8').toString() || this.IgCookie
+			: this.IgCookie;
 		return data;
 	}
 }

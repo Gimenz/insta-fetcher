@@ -184,7 +184,7 @@ export interface EdgeMediaPreviewCommentEdge {
 
 export interface PageInfo {
 	has_next_page: boolean;
-	end_cursor: null;
+	end_cursor: string;
 }
 
 export interface EdgeFollowedByClass {

@@ -9,13 +9,14 @@ export * from './StoriesMetadata'
 export * from './UserGraphQlV2'
 export * from './UserMetadata'
 export * from './PaginatedPosts'
+export * from './LoginData'
 
 /** instagram username */
 export type username = string;
 /** instagram password */
 export type password = string;
-/** sessionid from cookie */
-export type session_id = string;
+/** Instagram Cookie */
+export type IgCookie = string;
 /** instagram post url can be post, reel, tv */
 export type url = string;
 /** Media Type */

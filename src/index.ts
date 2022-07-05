@@ -8,7 +8,7 @@ import FormData from 'form-data';
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { bufferToStream, getPostType, randInt, shortcodeFormatter } from './utils/index';
 import { CookieHandler } from './helper/CookieHandler';
-import { username, url, session_id, ProductType, MediaType, IChangedProfilePicture } from './types';
+import { username, url, IgCookie, ProductType, MediaType, IChangedProfilePicture } from './types';
 import { IGUserMetadata, UserGraphQL } from './types/UserMetadata';
 import { IGStoriesMetadata, ItemStories, StoriesGraphQL } from './types/StoriesMetadata';
 import { highlight_ids_query, highlight_media_query } from './helper/query';
@@ -28,23 +28,23 @@ export * as InstagramMetadata from './types'
 export * from './helper/Session';
 export class igApi {
 	/**
-	 * Recommended to set session id for most all IG Request
-	 * @param session_id session id you can get it by using getSessionId function, see README.md or example file
+	 * Recommended to set cookie for most all IG Request
+	 * @param IgCookie cookie you can get it by using getSessionId function, see README.md or example file
 	 * @param storeCookie
 	 */
-	constructor(private session_id: session_id = '', public storeCookie: boolean = true) {
-		this.session_id = session_id;
+	constructor(private IgCookie: IgCookie = '', public storeCookie: boolean = true) {
+		this.IgCookie = IgCookie;
 		if (this.storeCookie) {
-			this.setCookie(this.session_id);
+			this.setCookie(this.IgCookie);
 		}
 	}
-	private cookie = new CookieHandler(this.session_id)
-	private accountUserId = this.session_id.match(/sessionid=(.*?);/)?.[1].split('%')[0] || ''
+	private cookie = new CookieHandler(this.IgCookie)
+	private accountUserId = this.IgCookie.match(/sessionid=(.*?);/)?.[1].split('%')[0] || ''
 
 	private buildHeaders = (agent: string = config.android, options?: any) => {
 		return {
 			'user-agent': agent,
-			'cookie': `${this.storeCookie && this.cookie.get() || this.session_id}`,
+			'cookie': `${this.storeCookie && this.cookie.get() || this.IgCookie}`,
 			'authority': 'www.instagram.com',
 			'content-type': 'application/x-www-form-urlencoded',
 			'origin': 'https://www.instagram.com',
@@ -84,15 +84,15 @@ export class igApi {
 	}
 
 	/**
-	 * Set session id for most all IG Request
-	 * @param {session_id} session_id
+	 * Set cookie for most all IG Request
+	 * @param {IgCookie} IgCookie
 	 */
-	private setCookie = (session_id: session_id = this.session_id) => {
+	private setCookie = (IgCookie: IgCookie = this.IgCookie) => {
 		try {
 			if (!this.cookie.check()) {
-				this.cookie.save(session_id);
+				this.cookie.save(IgCookie);
 			} else {
-				this.cookie.update(session_id);
+				this.cookie.update(IgCookie);
 			}
 		} catch (error) {
 			throw error;
@@ -162,7 +162,7 @@ export class igApi {
 	}
 
 	public fetchPost = async (url: url): Promise<IPostModels> => {
-		if (!this.session_id) throw new Error('set cookie first to use this function');
+		if (!this.IgCookie) throw new Error('set cookie first to use this function');
 		const post = shortcodeFormatter(url);
 
 		//const req = (await IGFetchDesktop.get(`/${post.type}/${post.shortcode}/?__a=1`))
@@ -191,6 +191,19 @@ export class igApi {
 		}
 	}
 
+	public fetchPostByMediaId = async (
+		mediaId: string | number,
+	): Promise<any> => {
+		try {
+			const res = await this.FetchIGAPI(
+				config.instagram_media_info_url.replace('{mediaId}', mediaId.toString())
+			)
+			return res?.data
+		} catch (error) {
+			throw error
+		}
+	}
+
 	/**
 	 * fetch client account profile  
 	 */
@@ -204,7 +217,7 @@ export class igApi {
 			);
 			const graphql: UserGraphQL = res?.data;
 
-			if (!this.session_id) throw new Error('set cookie first to use this function');
+			if (!this.IgCookie) throw new Error('set cookie first to use this function');
 			return graphql
 		} catch (error) {
 			throw error
@@ -213,10 +226,11 @@ export class igApi {
 
 	/**
 	 * fetch profile by username. including email, phone number 
-	 * @param {String} username
+	 * @param {username} username
+	 * @param {boolean} simplifiedMetadata if set to false, it will return full of json result from api request. default is set to true
 	 * @returns {Promise<IGUserMetadata>}
 	 */
-	public fetchUser = async (username: username): Promise<IGUserMetadata> => {
+	public fetchUser = async (username: username, simplifiedMetadata: boolean = true): Promise<UserGraphQL | IGUserMetadata> => {
 		const userID = await this.getIdByUsername(username);
 		// const { data } = await IGUser.get(`/${userID}/info/`);
 		const res = await this.FetchIGAPI(
@@ -225,9 +239,11 @@ export class igApi {
 		);
 		const graphql: UserGraphQL = res?.data;
 		const isSet: boolean = typeof graphql.user.full_name !== 'undefined';
-		if (!this.session_id) throw new Error('set cookie first to use this function');
+		if (!this.IgCookie) throw new Error('set cookie first to use this function');
 		if (!isSet && this.cookie.check()) throw new Error('Invalid cookie, pls update with new cookie');
-		return {
+		if (!simplifiedMetadata) {
+			return graphql as UserGraphQL
+		} else return {
 			id: graphql.user.pk,
 			username: graphql.user.username,
 			fullname: graphql.user.full_name,
@@ -247,7 +263,7 @@ export class igApi {
 			contact_phone_number: graphql.user.contact_phone_number,
 			public_email: graphql.user.public_email,
 			account_type: graphql.user.account_type,
-		};
+		} as IGUserMetadata;
 	}
 
 	/**
@@ -323,11 +339,11 @@ export class igApi {
 
 	/**
 	 * fetches stories metadata 
-	 * @param {string} username username target to fetch the stories, also work with private profile if you use session id \w your account that follows target account
+	 * @param {string} username username target to fetch the stories, also work with private profile if you use cookie \w your account that follows target account
 	 * @returns
 	 */
 	public fetchStories = async (username: username): Promise<IGStoriesMetadata> => {
-		if (!this.session_id) throw new Error('set cookie first to use this function');
+		if (!this.IgCookie) throw new Error('set cookie first to use this function');
 		const userID = await this.getIdByUsername(username);
 		//const { data } = await IGStories.get(`/${userID}/reel_media/`);
 		const res = await this.FetchIGAPI(
@@ -354,7 +370,7 @@ export class igApi {
 	 * @param {username} username
 	 * @returns 
 	 */
-	private _getReelsIds = async (username: username): Promise<ReelsIds[]> => {
+	public _getReelsIds = async (username: username): Promise<ReelsIds[]> => {
 		const userID: string = await this.getIdByUsername(username);
 		// const { data } = await IGHighlight.get('', {
 		// 	params: highlight_ids_query(userID)
@@ -379,10 +395,10 @@ export class igApi {
 
 	/**
 	 * get media urls from highlight id
-	 * @param {ids} id of highlight
+	 * @param {ids} ids of highlight
 	 * @returns 
 	 */
-	private _getReels = async (ids: string): Promise<ReelsMediaData[]> => {
+	public _getReels = async (ids: string): Promise<ReelsMediaData[]> => {
 		// const { data } = await IGHighlight.get('', { params: highlight_media_query(ids) })
 		const res = await this.FetchIGAPI(
 			config.instagram_graphql,
@@ -404,13 +420,13 @@ export class igApi {
 	}
 
 	/**
-	 * fetches highlight metadata (REQUIRES SESSION ID)
-	 * @param {string} username username target to fetch the highlights, also work with private profile if you use session id \w your account that follows target account
+	 * fetches highlight metadata (REQUIRES cookie)
+	 * @param {string} username username target to fetch the highlights, also work with private profile if you use cookie \w your account that follows target account
 	 * @returns
 	 */
 	public fetchHighlights = async (username: username): Promise<IHighlightsMetadata> => {
 		try {
-			if (!this.session_id) throw new Error('set cookie first to use this function');
+			if (!this.IgCookie) throw new Error('set cookie first to use this function');
 			const ids = await this._getReelsIds(username);
 			const reels = await Promise.all(ids.map(x => this._getReels(x.highlight_id)))
 
@@ -450,6 +466,28 @@ export class igApi {
 			'id': userId,
 			'first': 12,
 			'after': end_cursor
+		}
+		const res = await this.FetchIGAPI(config.instagram_graphql, '', config.android, { params })
+
+		return res?.data?.data.user.edge_owner_to_timeline_media
+	}
+
+	/**
+	 * fetches user posts, with pagination
+	 * @param username 
+	 * @param end_cursor get end_cursor by fetchUserPostsV2 first
+	 * @returns 
+	 */
+
+	public fetchUserPostsV2 = async (username: username, end_cursor = ''): Promise<IPaginatedPosts> => {
+		const userId = await this.getIdByUsername(username);
+		const params = {
+			'query_hash': '69cba40317214236af40e7efa697781d',
+			'variables': {
+				"id": userId,
+				"first": 12,
+				"after": end_cursor
+			}
 		}
 		const res = await this.FetchIGAPI(config.instagram_graphql, '', config.android, { params })
 
@@ -520,7 +558,7 @@ export class igApi {
 	 * @returns 
 	 */
 	public addPost = async (photo: string | Buffer, type: 'feed' | 'story' = 'feed', options: MediaConfigureOptions): Promise<PostFeedResult | PostStoryResult> => {
-		if (!this.session_id) throw new Error('set cookie first to use this function');
+		if (!this.IgCookie) throw new Error('set cookie first to use this function');
 		try {
 			const dateObj = new Date()
 			const now = dateObj
@@ -561,7 +599,7 @@ export class igApi {
 				'sec-fetch-dest': 'empty',
 				'referer': 'https://www.instagram.com/create/details/',
 				'accept-language': 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
-				'cookie': `${this.storeCookie && this.cookie.get() || this.session_id}`,
+				'cookie': `${this.storeCookie && this.cookie.get() || this.IgCookie}`,
 			}
 			//let payload = `upload_id=${responseUpload.upload_id}&caption=${caption}&usertags=&custom_accessibility_caption=&retry_timeout=`
 

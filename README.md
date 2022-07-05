@@ -6,7 +6,7 @@ Fetch instagram api with full details and simplified json metadata
 
 **Read the docs [here](https://gimenz.github.io/insta-fetcher/)**
 
-☕ Buy Me a Coffee : [Saweria](https://saweria.co/masgimenz 'Saweria')
+☕ Buy Me a Coffee : [Saweria](https://saweria.co/masgimenz "Saweria")
 
 # Features
 
@@ -20,7 +20,6 @@ Fetch instagram api with full details and simplified json metadata
 - [x] fetchUserPosts
 - [x] fetchUserV2
 
-
 # Usage
 
 ### Installation:
@@ -29,50 +28,52 @@ Fetch instagram api with full details and simplified json metadata
 npm i insta-fetcher
 ```
 
-### recommended to set the session id before make call to all function
+### recommended to set the cookie before make call to all function
 
 ```js
-let { igApi, getSessionId } = require('insta-fetcher');
+let { igApi, getCookie } = require("insta-fetcher");
 // using constructor
-let ig = new igApi('your session id');
+let ig = new igApi("your cookie");
 
 // you can get sesion id by using getSessionId function, it requires username & password
 (async () => {
-    const session_id = await getSessionId('username', 'password');
-    console.log(session_id);
+  const session_id = await getCookie("username", "password");
+  console.log(session_id);
 })();
 ```
 
 ## Example
+
 more example you can check at example.ts file
+
 ```js
-let { igApi } = require('insta-fetcher');
-let ig = new igApi('your session id');
+let { igApi } = require("insta-fetcher");
+let ig = new igApi("your cookie");
 
 // Public post
-ig.fetchPost('https://www.instagram.com/reel/CXhW_4sp32Z/').then((res) => {
-	console.log(res);
+ig.fetchPost("https://www.instagram.com/reel/CXhW_4sp32Z/").then((res) => {
+  console.log(res);
 });
 
 // User data
-ig.fetchUser('mg.creativestudio').then((res) => {
-	console.log(res);
+ig.fetchUser("mg.creativestudio").then((res) => {
+  console.log(res);
 });
 
 // Fetch stories
-ig.fetchStories('adiraas.p').then((res) => {
-	console.log(res);
+ig.fetchStories("adiraas.p").then((res) => {
+  console.log(res);
 });
 
 // Fetch highlights
-ig.fetchHighlights('adiraas.p').then((res) => {
-	console.log(res);
+ig.fetchHighlights("adiraas.p").then((res) => {
+  console.log(res);
 });
 ```
 
 ## My Project with this Library
 
-- https://github.com/Gimenz/nganu - simple multi-device base WhatsApp Bot 
+- https://github.com/Gimenz/nganu - simple multi-device base WhatsApp Bot
 
 # Contributing
 
