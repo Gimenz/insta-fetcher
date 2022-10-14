@@ -6,7 +6,7 @@
 import fs from 'fs'
 import FormData from 'form-data';
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
-import { bufferToStream, getPostType, randInt, shortcodeFormatter } from './utils/index';
+import { bufferToStream, getPostType, parseCookie, randInt, shortcodeFormatter } from './utils/index';
 import { CookieHandler } from './helper/CookieHandler';
 import { username, url, IgCookie, ProductType, MediaType, IChangedProfilePicture } from './types';
 import { IGUserMetadata, UserGraphQL } from './types/UserMetadata';
@@ -31,12 +31,14 @@ export class igApi {
 	 * Recommended to set cookie for most all IG Request
 	 * @param IgCookie cookie you can get it by using getSessionId function, see README.md or example file
 	 * @param storeCookie
+	 * @param AxiosOpts
 	 */
-	constructor(private IgCookie: IgCookie = '', public storeCookie: boolean = true) {
+	constructor(private IgCookie: IgCookie = '', public storeCookie: boolean = true, public AxiosOpts: AxiosRequestConfig = {}) {
 		this.IgCookie = IgCookie;
 		if (this.storeCookie) {
 			this.setCookie(this.IgCookie);
 		}
+		this.AxiosOpts = AxiosOpts;
 	}
 	private cookie = new CookieHandler(this.IgCookie)
 	private accountUserId = this.IgCookie.match(/sessionid=(.*?);/)?.[1].split('%')[0] || ''
@@ -65,16 +67,17 @@ export class igApi {
 	 * @param baseURL 
 	 * @param url 
 	 * @param agent 
-	 * @param options 
+	 * @param AxiosOptions 
 	 */
-	private FetchIGAPI = (baseURL: string, url: string = '', agent: string = config.android, options: AxiosRequestConfig = {}): Promise<AxiosResponse> | undefined => {
+	private FetchIGAPI = (baseURL: string, url: string = '', agent: string = config.android, AxiosOptions: AxiosRequestConfig = {}): Promise<AxiosResponse> | undefined => {
 		try {
 			return axios({
 				baseURL,
 				url,
-				headers: options.headers ? options.headers : this.buildHeaders(agent),
-				method: options.method || 'GET',
-				...options
+				headers: AxiosOptions.headers ? AxiosOptions.headers : this.buildHeaders(agent),
+				method: AxiosOptions.method || 'GET',
+				...AxiosOptions,
+				...this.AxiosOpts
 			});
 		} catch (error) {
 			if (axios.isAxiosError(error)) {
@@ -196,7 +199,8 @@ export class igApi {
 	): Promise<any> => {
 		try {
 			const res = await this.FetchIGAPI(
-				config.instagram_media_info_url.replace('{mediaId}', mediaId.toString())
+				config.instagram_api_v1,
+				`/media/${mediaId.toString()}/info/`
 			)
 			return res?.data
 		} catch (error) {
@@ -212,8 +216,8 @@ export class igApi {
 	): Promise<UserGraphQL> => {
 		try {
 			const res = await this.FetchIGAPI(
-				config.instagram_user_url,
-				`/${userID}/info/`
+				config.instagram_api_v1,
+				`/users/${userID}/info/`
 			);
 			const graphql: UserGraphQL = res?.data;
 
@@ -232,10 +236,9 @@ export class igApi {
 	 */
 	public fetchUser = async (username: username, simplifiedMetadata: boolean = true): Promise<UserGraphQL | IGUserMetadata> => {
 		const userID = await this.getIdByUsername(username);
-		// const { data } = await IGUser.get(`/${userID}/info/`);
 		const res = await this.FetchIGAPI(
-			config.instagram_user_url,
-			`/${userID}/info/`
+			config.instagram_api_v1,
+			`/users/${userID}/info/`
 		);
 		const graphql: UserGraphQL = res?.data;
 		const isSet: boolean = typeof graphql.user.full_name !== 'undefined';
@@ -345,10 +348,9 @@ export class igApi {
 	public fetchStories = async (username: username): Promise<IGStoriesMetadata> => {
 		if (!this.IgCookie) throw new Error('set cookie first to use this function');
 		const userID = await this.getIdByUsername(username);
-		//const { data } = await IGStories.get(`/${userID}/reel_media/`);
 		const res = await this.FetchIGAPI(
-			config.instagram_stories_url,
-			`/${userID}/reel_media/`,
+			config.instagram_api_v1,
+			`/feed/user${userID}/reel_media/`,
 			config.iPhone
 		);
 		const graphql: StoriesGraphQL = res?.data;
@@ -372,12 +374,9 @@ export class igApi {
 	 */
 	public _getReelsIds = async (username: username): Promise<ReelsIds[]> => {
 		const userID: string = await this.getIdByUsername(username);
-		// const { data } = await IGHighlight.get('', {
-		// 	params: highlight_ids_query(userID)
-		// })
 		const res = await this.FetchIGAPI(
-			config.instagram_graphql,
-			'',
+			config.instagram_base_url,
+			'/graphql/query/',
 			config.iPhone,
 			{ params: highlight_ids_query(userID) }
 		)
@@ -399,10 +398,9 @@ export class igApi {
 	 * @returns 
 	 */
 	public _getReels = async (ids: string): Promise<ReelsMediaData[]> => {
-		// const { data } = await IGHighlight.get('', { params: highlight_media_query(ids) })
 		const res = await this.FetchIGAPI(
-			config.instagram_graphql,
-			'',
+			config.instagram_base_url,
+			'/graphql/query/',
 			config.iPhone,
 			{ params: highlight_media_query(ids) }
 		)
@@ -420,7 +418,7 @@ export class igApi {
 	}
 
 	/**
-	 * fetches highlight metadata (REQUIRES cookie)
+	 * fetches highlight metadata
 	 * @param {string} username username target to fetch the highlights, also work with private profile if you use cookie \w your account that follows target account
 	 * @returns
 	 */
@@ -454,7 +452,7 @@ export class igApi {
 
 	/**
 	 * fetches user posts, with pagination
-	 * @deprecated Does not return all information about a post
+	 * @deprecated Does not return all information about a post, use fetchUserPostsV2()
 	 * @param username 
 	 * @param end_cursor get end_cursor by fetch user posts first
 	 * @returns 
@@ -467,7 +465,7 @@ export class igApi {
 			'first': 12,
 			'after': end_cursor
 		}
-		const res = await this.FetchIGAPI(config.instagram_graphql, '', config.android, { params })
+		const res = await this.FetchIGAPI(config.instagram_base_url, '/graphql/query/', config.android, { params })
 
 		return res?.data?.data.user.edge_owner_to_timeline_media
 	}
@@ -489,7 +487,7 @@ export class igApi {
 				"after": end_cursor
 			}
 		}
-		const res = await this.FetchIGAPI(config.instagram_graphql, '', config.android, { params })
+		const res = await this.FetchIGAPI(config.instagram_base_url, '/graphql/query/', config.android, { params })
 
 		return res?.data?.data.user.edge_owner_to_timeline_media
 	}
@@ -519,7 +517,7 @@ export class igApi {
 
 			const nameEntity = `${uploadId}_0_${randInt(1000000000, 9999999999)}`
 
-			const ndas = {
+			const headers = {
 				'x-entity-type': 'image/jpeg',
 				offset: 0,
 				'x-entity-name': nameEntity,
@@ -536,7 +534,7 @@ export class igApi {
 				'X-IG-Bandwidth-TotalTime-MS': '0',
 			}
 
-			const headersPhoto = this.buildHeaders(config.android, ndas)
+			const headersPhoto = this.buildHeaders(config.android, headers)
 
 			const result = await this.FetchIGAPI(
 				`${config.instagram_base_url}`,
@@ -591,21 +589,20 @@ export class igApi {
 				'accept': '*/*',
 				'user-agent': config.desktop,
 				'x-requested-with': 'XMLHttpRequest',
-				'x-csrftoken': await getCsrfToken(),
+				'x-csrftoken': parseCookie(this.IgCookie).csrftoken,
 				'x-ig-app-id': '1217981644879628',
 				'origin': 'https://www.instagram.com',
 				'sec-fetch-site': 'same-origin',
 				'sec-fetch-mode': 'cors',
 				'sec-fetch-dest': 'empty',
-				'referer': 'https://www.instagram.com/create/details/',
+				'referer': 'https://www.instagram.com/',
 				'accept-language': 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
 				'cookie': `${this.storeCookie && this.cookie.get() || this.IgCookie}`,
 			}
-			//let payload = `upload_id=${responseUpload.upload_id}&caption=${caption}&usertags=&custom_accessibility_caption=&retry_timeout=`
 
 			const result = await this.FetchIGAPI(
-				`${config.instagram_base_url}`,
-				`/create/${type === 'feed' ? 'configure/' : 'configure_to_story/'}`,
+				`${config.instagram_api_v1}`,
+				`/media/${type === 'feed' ? 'configure/' : 'configure_to_story/'}`,
 				config.android,
 				{ data: new URLSearchParams(Object.entries(payloadForm)).toString(), method: 'POST', headers: headers }
 			);

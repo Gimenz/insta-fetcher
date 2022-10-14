@@ -48,7 +48,15 @@ more example you can check at example.ts file
 
 ```js
 let { igApi } = require("insta-fetcher");
-let ig = new igApi("your cookie");
+
+// some example with proxy, but i never test it
+let ig = new igApi("your cookie", false, {
+      proxy: {
+        host: 'proxy-url',
+        port: 80,
+        auth: {username: 'my-user', password: 'my-password'}
+    }
+});
 
 // Public post
 ig.fetchPost("https://www.instagram.com/reel/CXhW_4sp32Z/").then((res) => {
