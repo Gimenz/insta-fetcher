@@ -1,7 +1,14 @@
 // an example to get cookie using getCookie function
 
 import { getCookie, igApi, isIgPostUrl, shortcodeFormatter } from '../src'
-const ig = new igApi('your Cookie');
+
+// some example working with axios proxy
+const proxy = {
+    host: '127.0.0.1',
+    port: 1337,
+    protocol: 'http'
+}
+const ig = new igApi('your Cookie', false, { proxy });
 
 // you can easily get ig cookie. from anywhere, termux, terminal or etc
 getCookie('username', 'password').then(res => {

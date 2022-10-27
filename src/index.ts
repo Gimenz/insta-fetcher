@@ -350,7 +350,7 @@ export class igApi {
 		const userID = await this.getIdByUsername(username);
 		const res = await this.FetchIGAPI(
 			config.instagram_api_v1,
-			`/feed/user${userID}/reel_media/`,
+			`/feed/user/${userID}/reel_media/`,
 			config.iPhone
 		);
 		const graphql: StoriesGraphQL = res?.data;
