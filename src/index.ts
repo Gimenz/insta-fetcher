@@ -169,28 +169,33 @@ export class igApi {
 		const post = shortcodeFormatter(url);
 
 		//const req = (await IGFetchDesktop.get(`/${post.type}/${post.shortcode}/?__a=1`))
-		const res = await this.FetchIGAPI(
-			config.instagram_base_url,
-			`/${post.type}/${post.shortcode}/?__a=1&__d=dis`,
-			config.desktop
-		)
-
-		const metadata: IRawBody = res?.data
-		const item = metadata.items[0]
-		return {
-			username: item.user.username,
-			name: item.user.full_name,
-			postType: getPostType(item.product_type),
-			media_id: item.id,
-			shortcode: item.code,
-			taken_at_timestamp: item.taken_at,
-			likes: item.like_count,
-			caption: item.caption?.text || null,
-			media_count: item.product_type == ProductType.CAROUSEL ? item.carousel_media_count : 1,
-			comment_count: item.comment_count,
-			video_duration: item?.video_duration || null,
-			music: item?.clips_metadata || null,
-			links: this._formatSidecar(metadata),
+		try {
+			const res = await this.FetchIGAPI(
+				config.instagram_base_url,
+				`/${post.type}/${post.shortcode}/?__a=1&__d=dis`,
+				config.desktop
+			)
+			const metadata: IRawBody = res?.data
+			const item = metadata.items[0]
+			return {
+				username: item.user.username,
+				name: item.user.full_name,
+				postType: getPostType(item.product_type),
+				media_id: item.id,
+				shortcode: item.code,
+				taken_at_timestamp: item.taken_at,
+				likes: item.like_count,
+				caption: item.caption?.text || null,
+				media_count: item.product_type == ProductType.CAROUSEL ? item.carousel_media_count : 1,
+				comment_count: item.comment_count,
+				video_duration: item?.video_duration || null,
+				music: item?.clips_metadata || null,
+				links: this._formatSidecar(metadata),
+			}
+		} catch (err)
+			return {
+				error: true,
+				message: 'failed to fetch Metadata'
 		}
 	}
 
