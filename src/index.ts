@@ -192,13 +192,14 @@ export class igApi {
 				music: item?.clips_metadata || null,
 				links: this._formatSidecar(metadata),
 			}
-		} catch (err)
+		} catch (err) {
 			return {
 				error: true,
 				message: 'failed to fetch Metadata'
+			}
 		}
 	}
-
+	
 	public fetchPostByMediaId = async (
 		mediaId: string | number,
 	): Promise<any> => {
