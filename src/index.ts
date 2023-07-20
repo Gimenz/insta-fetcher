@@ -346,7 +346,6 @@ export class igApi {
 	 * @returns
 	 */
 	public fetchStories = async (username: username): Promise<IGStoriesMetadata> => {
-		if (!this.IgCookie) throw new Error('set cookie first to use this function');
 		const userID = await this.getIdByUsername(username);
 		const res = await this.FetchIGAPI(
 			config.instagram_api_v1,
@@ -354,17 +353,18 @@ export class igApi {
 			config.iPhone
 		);
 		const graphql: StoriesGraphQL = res?.data;
-		const isFollowing: boolean =
-			typeof graphql.user.friendship_status !== 'undefined';
+		const isFollowing = typeof graphql.user?.friendship_status !== 'undefined';
 
-		if (!isFollowing && graphql.user.is_private)
+		if (!isFollowing && graphql.user.is_private) {
 			throw new Error('Private profile');
-		if (graphql.items.length == 0) throw new Error('Stories not available');
-		return {
-			username: graphql.user.username,
-			stories_count: graphql.media_count,
-			stories: this._parseStories(graphql),
-		};
+		} else {
+			return {
+				username: graphql.user.username,
+				stories_count: graphql.media_count,
+				stories: graphql.items.length == 0 ? null : this._parseStories(graphql),
+				graphql,
+			};
+		}
 	}
 
 	/**
