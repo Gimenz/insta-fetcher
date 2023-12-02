@@ -7,7 +7,6 @@ import fs from 'fs'
 import FormData from 'form-data';
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { bufferToStream, getPostType, parseCookie, randInt, shortcodeFormatter } from './utils/index';
-import { CookieHandler } from './helper/CookieHandler';
 import { username, url, IgCookie, ProductType, MediaType, IChangedProfilePicture } from './types';
 import { IGUserMetadata, UserGraphQL } from './types/UserMetadata';
 import { IGStoriesMetadata, ItemStories, StoriesGraphQL } from './types/StoriesMetadata';
@@ -33,20 +32,16 @@ export class igApi {
 	 * @param storeCookie
 	 * @param AxiosOpts
 	 */
-	constructor(private IgCookie: IgCookie = '', public storeCookie: boolean = true, public AxiosOpts: AxiosRequestConfig = {}) {
+	constructor(private IgCookie: IgCookie = '', public AxiosOpts: AxiosRequestConfig = {}) {
 		this.IgCookie = IgCookie;
-		if (this.storeCookie) {
-			this.setCookie(this.IgCookie);
-		}
 		this.AxiosOpts = AxiosOpts;
 	}
-	private cookie = new CookieHandler(this.IgCookie)
 	private accountUserId = this.IgCookie.match(/sessionid=(.*?);/)?.[1].split('%')[0] || ''
 
 	private buildHeaders = (agent: string = config.android, options?: any) => {
 		return {
 			'user-agent': agent,
-			'cookie': `${this.storeCookie && this.cookie.get() || this.IgCookie}`,
+			'cookie': `${this.IgCookie}`,
 			'authority': 'www.instagram.com',
 			'content-type': 'application/x-www-form-urlencoded',
 			'origin': 'https://www.instagram.com',
@@ -86,21 +81,6 @@ export class igApi {
 		}
 	}
 
-	/**
-	 * Set cookie for most all IG Request
-	 * @param {IgCookie} IgCookie
-	 */
-	private setCookie = (IgCookie: IgCookie = this.IgCookie) => {
-		try {
-			if (!this.cookie.check()) {
-				this.cookie.save(IgCookie);
-			} else {
-				this.cookie.update(IgCookie);
-			}
-		} catch (error) {
-			throw error;
-		}
-	}
 	/**
 	 * get user id by username
 	 * @param {username} username
@@ -165,7 +145,6 @@ export class igApi {
 	}
 
 	public fetchPost = async (url: url): Promise<IPostModels> => {
-		if (!this.IgCookie) throw new Error('set cookie first to use this function');
 		const post = shortcodeFormatter(url);
 
 		//const req = (await IGFetchDesktop.get(`/${post.type}/${post.shortcode}/?__a=1`))
@@ -220,8 +199,6 @@ export class igApi {
 				`/users/${userID}/info/`
 			);
 			const graphql: UserGraphQL = res?.data;
-
-			if (!this.IgCookie) throw new Error('set cookie first to use this function');
 			return graphql
 		} catch (error) {
 			throw error
@@ -242,8 +219,6 @@ export class igApi {
 		);
 		const graphql: UserGraphQL = res?.data;
 		const isSet: boolean = typeof graphql.user.full_name !== 'undefined';
-		if (!this.IgCookie) throw new Error('set cookie first to use this function');
-		if (!isSet && this.cookie.check()) throw new Error('Invalid cookie, pls update with new cookie');
 		if (!simplifiedMetadata) {
 			return graphql as UserGraphQL
 		} else return {
@@ -424,7 +399,6 @@ export class igApi {
 	 */
 	public fetchHighlights = async (username: username): Promise<IHighlightsMetadata> => {
 		try {
-			if (!this.IgCookie) throw new Error('set cookie first to use this function');
 			const ids = await this._getReelsIds(username);
 			const reels = await Promise.all(ids.map(x => this._getReels(x.highlight_id)))
 
@@ -556,7 +530,6 @@ export class igApi {
 	 * @returns 
 	 */
 	public addPost = async (photo: string | Buffer, type: 'feed' | 'story' = 'feed', options: MediaConfigureOptions): Promise<PostFeedResult | PostStoryResult> => {
-		if (!this.IgCookie) throw new Error('set cookie first to use this function');
 		try {
 			const dateObj = new Date()
 			const now = dateObj
@@ -597,7 +570,7 @@ export class igApi {
 				'sec-fetch-dest': 'empty',
 				'referer': 'https://www.instagram.com/',
 				'accept-language': 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
-				'cookie': `${this.storeCookie && this.cookie.get() || this.IgCookie}`,
+				'cookie': `${this.IgCookie}`,
 			}
 
 			const result = await this.FetchIGAPI(
