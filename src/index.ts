@@ -95,6 +95,24 @@ export class igApi {
 		return res?.data.graphql.user.id || res
 	}
 
+	public searchFollower = async (userId: string, seachTerm: string): Promise<string> => {
+		const res = await this.FetchIGAPI(
+			config.instagram_base_url,
+			`/api/v1/friendships/${userId}/followers/?count=12&query=${seachTerm}&search_surface=follow_list_page`,
+			config.iPhone,
+		);
+		return res?.data || res
+	}
+
+	public searchFollowing = async (userId: string, seachTerm: string): Promise<string> => {
+		const res = await this.FetchIGAPI(
+			config.instagram_base_url,
+			`/api/v1/friendships/${userId}/following/?query=${seachTerm}`,
+			config.iPhone,
+		);
+		return res?.data || res
+	}
+
 	private _formatSidecar = (data: IRawBody): Array<MediaUrls> => {
 		const gql = data.items[0]
 		let urls: MediaUrls[] = []
