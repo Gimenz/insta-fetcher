@@ -13,6 +13,10 @@ export * from './LoginData'
 
 /** instagram username */
 export type username = string;
+/** instagram user pk */
+export type userId = string;
+/** term to search for a user, it can be their name or username */
+export type seachTerm = string;
 /** instagram password */
 export type password = string;
 /** Instagram Cookie */
