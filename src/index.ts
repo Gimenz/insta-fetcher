@@ -7,7 +7,7 @@ import fs from 'fs'
 import FormData from 'form-data';
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { bufferToStream, getPostType, parseCookie, randInt, shortcodeFormatter } from './utils/index';
-import { username, url, IgCookie, ProductType, MediaType, IChangedProfilePicture } from './types';
+import { username, userId, seachTerm, url, IgCookie, ProductType, MediaType, IChangedProfilePicture } from './types';
 import { IGUserMetadata, UserGraphQL } from './types/UserMetadata';
 import { IGStoriesMetadata, ItemStories, StoriesGraphQL } from './types/StoriesMetadata';
 import { highlight_ids_query, highlight_media_query } from './helper/query';
@@ -93,6 +93,24 @@ export class igApi {
 			config.iPhone,
 		);
 		return res?.data.graphql.user.id || res
+	}
+
+	public searchFollower = async (userId: userId, seachTerm: seachTerm): Promise<string> => {
+		const res = await this.FetchIGAPI(
+			config.instagram_base_url,
+			`/api/v1/friendships/${userId}/followers/?count=12&query=${seachTerm}&search_surface=follow_list_page`,
+			config.iPhone,
+		);
+		return res?.data || res
+	}
+
+	public searchFollowing = async (userId: userId, seachTerm: seachTerm): Promise<string> => {
+		const res = await this.FetchIGAPI(
+			config.instagram_base_url,
+			`/api/v1/friendships/${userId}/following/?query=${seachTerm}`,
+			config.iPhone,
+		);
+		return res?.data || res
 	}
 
 	private _formatSidecar = (data: IRawBody): Array<MediaUrls> => {
