@@ -10,6 +10,7 @@ export * from './UserGraphQlV2'
 export * from './UserMetadata'
 export * from './PaginatedPosts'
 export * from './LoginData'
+export * from './searchFollow'
 
 /** instagram username */
 export type username = string;

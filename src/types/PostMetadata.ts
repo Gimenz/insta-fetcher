@@ -1,4 +1,4 @@
-import { ClipsMusicAttributionInfo, EdgeFollowClass, MediaType, Typename, User } from '.';
+import {  MediaType, Typename, User } from '.';
 
 export interface IGPostMetadata {
 	/** an Instagram Username */
@@ -154,10 +154,8 @@ export interface PurpleNode extends ViewerInfo {
 	has_upcoming_event: boolean;
 	accessibility_caption: null | string;
 	edge_media_to_caption: EdgeMediaToCaptionClass;
-	edge_media_to_comment: EdgeFollowClass;
 	comments_disabled: boolean;
 	taken_at_timestamp: number;
-	edge_media_preview_like: EdgeFollowClass;
 	location: Location | null;
 	thumbnail_src: string;
 	thumbnail_resources: DisplayResource[];
@@ -290,4 +288,13 @@ export interface ShortcodeMediaOwner {
 	pass_tiering_recommendation: boolean;
 	edge_owner_to_timeline_media: EdgeFollowedByClass;
 	edge_followed_by: EdgeFollowedByClass;
+}
+
+export interface ClipsMusicAttributionInfo {
+    artist_name:              string;
+    song_name:                string;
+    uses_original_audio:      boolean;
+    should_mute_audio:        boolean;
+    should_mute_audio_reason: string;
+    audio_id:                 string;
 }
