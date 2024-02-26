@@ -1,124 +1,111 @@
-import { DashInfo, Dimensions, DisplayResource, EdgeMediaToCaptionClass, EdgeMediaToTaggedUser, EdgeSidecarToChildren, PageInfo, PurpleNode, SharingFrictionInfo, Typename, User } from ".";
-
-export interface UserGraphQLV2 {
-    seo_category_infos:                        Array<string[]>;
-    logging_page_id:                           string;
-    show_suggested_profiles:                   boolean;
-    show_follow_dialog:                        boolean;
-    graphql:                                   Graphql;
-    toast_content_on_load:                     null;
-    show_view_shop:                            boolean;
-    profile_pic_edit_sync_props:               ProfilePicEditSyncProps;
-    always_show_message_button_to_pro_account: boolean;
-}
+import { PageInfo } from ".";
 
 export interface Graphql {
-    user: GraphqlUser;
+    data?:   Data;
+    status?: string;
 }
 
-export interface GraphqlUser {
-    biography:                      string;
-    blocked_by_viewer:              boolean;
-    restricted_by_viewer:           boolean;
-    country_block:                  boolean;
-    external_url:                   null;
-    external_url_linkshimmed:       null;
-    edge_followed_by:               EdgeFollowClass;
-    fbid:                           string;
-    followed_by_viewer:             boolean;
-    edge_follow:                    EdgeFollowClass;
-    follows_viewer:                 boolean;
-    full_name:                      string;
-    has_ar_effects:                 boolean;
-    has_clips:                      boolean;
-    has_guides:                     boolean;
-    has_channel:                    boolean;
-    has_blocked_viewer:             boolean;
-    highlight_reel_count:           number;
-    has_requested_viewer:           boolean;
-    hide_like_and_view_counts:      boolean;
-    id:                             string;
-    is_business_account:            boolean;
-    is_professional_account:        boolean;
-    is_embeds_disabled:             boolean;
-    is_joined_recently:             boolean;
-    business_address_json:          null;
-    business_contact_method:        string;
-    business_email:                 null;
-    business_phone_number:          null;
-    business_category_name:         null;
-    overall_category_name:          null;
-    category_enum:                  null;
-    category_name:                  null;
-    is_private:                     boolean;
-    is_verified:                    boolean;
-    edge_mutual_followed_by:        EdgeMutualFollowedBy;
-    profile_pic_url:                string;
-    profile_pic_url_hd:             string;
-    requested_by_viewer:            boolean;
-    should_show_category:           boolean;
-    should_show_public_contacts:    boolean;
-    state_controlled_media_country: null;
-    username:                       string;
-    connected_fb_page:              null;
-    pronouns:                       any[];
-    edge_felix_video_timeline:      EdgeFelixVideoTimelineClass;
-    edge_owner_to_timeline_media:   EdgeFelixVideoTimelineClass;
-    edge_saved_media:               EdgeFelixVideoTimelineClass;
-    edge_media_collections:         EdgeFelixVideoTimelineClass;
+export interface Data {
+    user?: UserGraphQlV2;
 }
 
-export interface EdgeFelixVideoTimelineClass {
-    count:     number;
-    page_info: PageInfo;
-    edges:     EdgeFelixVideoTimelineEdge[];
+export interface UserGraphQlV2 {
+    ai_agent_type?:                     null;
+    biography?:                         string;
+    bio_links?:                         BioLink[];
+    fb_profile_biolink?:                null;
+    biography_with_entities?:           BiographyWithEntities;
+    blocked_by_viewer?:                 boolean;
+    restricted_by_viewer?:              boolean;
+    country_block?:                     boolean;
+    eimu_id?:                           string;
+    external_url?:                      string;
+    external_url_linkshimmed?:          string;
+    edge_followed_by?:                  EdgeFollow;
+    fbid?:                              string;
+    followed_by_viewer?:                boolean;
+    edge_follow?:                       EdgeFollow;
+    follows_viewer?:                    boolean;
+    full_name?:                         string;
+    group_metadata?:                    null;
+    has_ar_effects?:                    boolean;
+    has_clips?:                         boolean;
+    has_guides?:                        boolean;
+    has_chaining?:                      boolean;
+    has_channel?:                       boolean;
+    has_blocked_viewer?:                boolean;
+    highlight_reel_count?:              number;
+    has_requested_viewer?:              boolean;
+    hide_like_and_view_counts?:         boolean;
+    id?:                                string;
+    is_business_account?:               boolean;
+    is_professional_account?:           boolean;
+    is_supervision_enabled?:            boolean;
+    is_guardian_of_viewer?:             boolean;
+    is_supervised_by_viewer?:           boolean;
+    is_supervised_user?:                boolean;
+    is_embeds_disabled?:                boolean;
+    is_joined_recently?:                boolean;
+    guardian_id?:                       null;
+    business_address_json?:             null;
+    business_contact_method?:           string;
+    business_email?:                    null;
+    business_phone_number?:             null;
+    business_category_name?:            null;
+    overall_category_name?:             null;
+    category_enum?:                     null;
+    category_name?:                     null;
+    is_private?:                        boolean;
+    is_verified?:                       boolean;
+    is_verified_by_mv4b?:               boolean;
+    is_regulated_c18?:                  boolean;
+    edge_mutual_followed_by?:           EdgeMutualFollowedBy;
+    pinned_channels_list_count?:        number;
+    profile_pic_url?:                   string;
+    profile_pic_url_hd?:                string;
+    requested_by_viewer?:               boolean;
+    should_show_category?:              boolean;
+    should_show_public_contacts?:       boolean;
+    show_account_transparency_details?: boolean;
+    transparency_label?:                null;
+    transparency_product?:              null;
+    username?:                          string;
+    connected_fb_page?:                 null;
+    pronouns?:                          any[];
+    edge_owner_to_timeline_media?:      EdgeOwnerToTimelineMedia;
 }
 
-export interface EdgeFelixVideoTimelineEdge {
-    node: PurpleNode;
+export interface BioLink {
+    title?:     string;
+    lynx_url?:  string;
+    url?:       string;
+    link_type?: string;
 }
 
-
-export interface ClipsMusicAttributionInfo {
-    artist_name:              string;
-    song_name:                string;
-    uses_original_audio:      boolean;
-    should_mute_audio:        boolean;
-    should_mute_audio_reason: string;
-    audio_id:                 string;
+export interface BiographyWithEntities {
+    raw_text?: string;
+    entities?: any[];
 }
 
-export interface EdgeFollowClass {
-    count: number;
+export interface EdgeFollow {
+    count?: number;
 }
 
 export interface EdgeMutualFollowedBy {
-    count: number;
-    edges: EdgeMutualFollowedByEdge[];
+    count?: number;
+    edges?: EdgeUser[];
 }
 
-export interface EdgeMutualFollowedByEdge {
-    node: IndigoNode;
+export interface EdgeUser {
+    node?: NodeUsername;
 }
 
-export interface IndigoNode {
-    username: string;
+export interface NodeUsername {
+    username?: string;
 }
 
-export interface ProfilePicEditSyncProps {
-    show_change_profile_pic_confirm_dialog:       boolean;
-    show_profile_pic_sync_reminders:              boolean;
-    identity_id:                                  string;
-    remove_profile_pic_header:                    null;
-    remove_profile_pic_subtext:                   null;
-    remove_profile_pic_confirm_cta:               null;
-    remove_profile_pic_cancel_cta:                null;
-    is_business_central_identity:                 boolean;
-    change_profile_pic_actions_screen_header:     string[];
-    change_profile_pic_actions_screen_subheader:  null;
-    change_profile_pic_actions_screen_upload_cta: string[];
-    change_profile_pic_actions_screen_remove_cta: string[];
-    change_profile_pic_actions_screen_cancel_cta: string[];
-    change_profile_pic_header:                    null;
-    change_profile_pic_subtext:                   null;
+export interface EdgeOwnerToTimelineMedia {
+    count?:     number;
+    page_info?: PageInfo;
+    edges?:     any[];
 }

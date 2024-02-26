@@ -10,7 +10,6 @@ const upper = lower.toUpperCase();
 const numbers = '0123456789'
 const ig_alphabet = upper + lower + numbers + '-_'
 const bigint_alphabet = numbers + lower
-
 /**
  * convert instagram shortcode into media_id
  * @param shortcode 
@@ -35,7 +34,7 @@ export const shortcodeFromMediaID = (media_id: string) => {
 }
 
 /** Instagram post regex */
-export const IGPostRegex = /(?:https?:\/\/)?(?:www\.)?(?:instagram\.com(?:\/.+?)?\/(p|reel|tv)\/)([\w-]+)(?:\/)?(\?.*)?$/gim
+export const IGPostRegex = /(?:https?:\/\/)?(?:www\.)?(?:instagram\.com(?:\/.+?)?\/(p|reels|tv)\/)([\w-]+)(?:\/)?(\?.*)?$/gim
 
 /**
  * format instagram long url to get shortcode
@@ -43,12 +42,12 @@ export const IGPostRegex = /(?:https?:\/\/)?(?:www\.)?(?:instagram\.com(?:\/.+?)
  * @returns {formattedShortcode}
  */
 export const shortcodeFormatter = (url: string): formattedShortcode => {
-    const re = /(?:https?:\/\/)?(?:www\.)?(?:instagram\.com(?:\/.+?)?\/(p|reel|tv)\/)([\w-]+)(?:\/)?(\?.*)?$/gim.exec(url) || '';
+    const splitted = IGPostRegex.exec(url) || '';
     return {
-        type: re[1],
-        shortcode: re[2],
-        url: 'https://www.instagram.com/' + re[1] + '/' + re[2],
-        media_id: shortcodeToMediaID(re[2])
+        type: splitted[1],
+        shortcode: splitted[2],
+        url: 'https://www.instagram.com/' + splitted[1] + '/' + splitted[2],
+        media_id: shortcodeToMediaID(splitted[2])
     }
 };
 
@@ -58,7 +57,7 @@ export const shortcodeFormatter = (url: string): formattedShortcode => {
  * @returns 
  */
 export const isIgPostUrl = (url: string): boolean => {
-    return /(?:https?:\/\/)?(?:www\.)?(?:instagram\.com(?:\/.+?)?\/(p|reel|tv)\/)([\w-]+)(?:\/)?(\?.*)?$/gim.test(url);
+    return IGPostRegex.test(url);
 }
 
 /**

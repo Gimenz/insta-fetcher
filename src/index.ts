@@ -7,7 +7,7 @@ import fs from 'fs'
 import FormData from 'form-data';
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { bufferToStream, getPostType, parseCookie, randInt, shortcodeFormatter } from './utils/index';
-import { username, userId, seachTerm, url, IgCookie, ProductType, MediaType, IChangedProfilePicture } from './types';
+import { username, userId, seachTerm, url, IgCookie, ProductType, MediaType, IChangedProfilePicture, ISearchFollow, IGPostMetadata } from './types';
 import { IGUserMetadata, UserGraphQL } from './types/UserMetadata';
 import { IGStoriesMetadata, ItemStories, StoriesGraphQL } from './types/StoriesMetadata';
 import { highlight_ids_query, highlight_media_query } from './helper/query';
@@ -19,7 +19,7 @@ import { getCsrfToken } from './helper/Session';
 import { PostFeedResult } from './types/PostFeedResult';
 import { PostStoryResult } from './types/PostStoryResult';
 import { MediaConfigureOptions } from './types/MediaConfigureOptions';
-import { GraphqlUser, UserGraphQLV2 } from './types/UserGraphQlV2';
+import { UserGraphQlV2, Graphql } from './types/UserGraphQlV2';
 import { IPaginatedPosts } from './types/PaginatedPosts';
 
 export * from './utils'
@@ -87,24 +87,20 @@ export class igApi {
 	 * @returns
 	 */
 	public getIdByUsername = async (username: username): Promise<string> => {
-		const res = await this.FetchIGAPI(
-			config.instagram_base_url,
-			`/${username}/?__a=1&__d=dis`,
-			config.iPhone,
-		);
-		return res?.data.graphql.user.id || res
+		const res = await this.fetchUserV2(username);
+		return res?.id as userId;
 	}
 
-	public searchFollower = async (userId: userId, seachTerm: seachTerm): Promise<string> => {
+	public searchFollower = async (userId: userId, seachTerm: seachTerm): Promise<ISearchFollow> => {
 		const res = await this.FetchIGAPI(
 			config.instagram_base_url,
-			`/api/v1/friendships/${userId}/followers/?count=12&query=${seachTerm}&search_surface=follow_list_page`,
+			`/friendships/${userId}/followers/?count=12&query=${seachTerm}&search_surface=follow_list_page`,
 			config.iPhone,
 		);
 		return res?.data || res
 	}
 
-	public searchFollowing = async (userId: userId, seachTerm: seachTerm): Promise<string> => {
+	public searchFollowing = async (userId: userId, seachTerm: seachTerm): Promise<ISearchFollow> => {
 		const res = await this.FetchIGAPI(
 			config.instagram_base_url,
 			`/api/v1/friendships/${userId}/following/?query=${seachTerm}`,
@@ -166,13 +162,8 @@ export class igApi {
 		const post = shortcodeFormatter(url);
 
 		//const req = (await IGFetchDesktop.get(`/${post.type}/${post.shortcode}/?__a=1`))
-		const res = await this.FetchIGAPI(
-			config.instagram_base_url,
-			`/${post.type}/${post.shortcode}/?__a=1&__d=dis`,
-			config.desktop
-		)
+		const metadata = await this.fetchPostByMediaId(post.media_id)
 
-		const metadata: IRawBody = res?.data
 		const item = metadata.items[0]
 		return {
 			username: item.user.username,
@@ -191,9 +182,7 @@ export class igApi {
 		}
 	}
 
-	public fetchPostByMediaId = async (
-		mediaId: string | number,
-	): Promise<any> => {
+	public fetchPostByMediaId = async (mediaId: string | number): Promise<IRawBody> => {
 		try {
 			const res = await this.FetchIGAPI(
 				config.instagram_api_v1,
@@ -236,7 +225,6 @@ export class igApi {
 			`/users/${userID}/info/`
 		);
 		const graphql: UserGraphQL = res?.data;
-		const isSet: boolean = typeof graphql.user.full_name !== 'undefined';
 		if (!simplifiedMetadata) {
 			return graphql as UserGraphQL
 		} else return {
@@ -263,14 +251,18 @@ export class igApi {
 	}
 
 	/**
-	 * this do request same as /?__a=1
+	 * hmmm..?
 	 * @param username 
 	 * @returns 
 	 */
 	public fetchUserV2 = async (username: username) => {
-		const res = await this.FetchIGAPI(config.instagram_base_url, `/${username}/?__a=1&__d=dis`);
-		const { graphql }: UserGraphQLV2 = res?.data;
-		return graphql.user as GraphqlUser;
+		const res = await this.FetchIGAPI(
+			config.instagram_api_v1,
+			`/users/web_profile_info/?username=${username}`,
+			config.iPhone,
+		);
+		const graphql : Graphql = res?.data;
+		return graphql.data?.user as UserGraphQlV2;
 	}
 
 	/**
@@ -278,7 +270,7 @@ export class igApi {
 	 * @param username 
 	 * @returns true if user is follow me
 	 */
-	public isFollowMe = async (username: username): Promise<boolean> => {
+	public isFollowMe = async (username: username): Promise<boolean|undefined> => {
 		const user = await this.fetchUserV2(username);
 		return user.follows_viewer;
 	}
