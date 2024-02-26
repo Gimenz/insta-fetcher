@@ -93,7 +93,7 @@ export class igApi {
 
 	public searchFollower = async (userId: userId, seachTerm: seachTerm): Promise<ISearchFollow> => {
 		const res = await this.FetchIGAPI(
-			config.instagram_base_url,
+			config.instagram_api_v1,
 			`/friendships/${userId}/followers/?count=12&query=${seachTerm}&search_surface=follow_list_page`,
 			config.iPhone,
 		);
@@ -102,8 +102,8 @@ export class igApi {
 
 	public searchFollowing = async (userId: userId, seachTerm: seachTerm): Promise<ISearchFollow> => {
 		const res = await this.FetchIGAPI(
-			config.instagram_base_url,
-			`/api/v1/friendships/${userId}/following/?query=${seachTerm}`,
+			config.instagram_api_v1,
+			`/friendships/${userId}/following/?query=${seachTerm}`,
 			config.iPhone,
 		);
 		return res?.data || res
