@@ -1,7 +1,7 @@
 import { Readable } from 'stream';
 import { formattedShortcode, IGPostType, postType, ProductType } from '../types/index';
 import bigInt from 'big-integer';
-import { AxiosResponseHeaders } from 'axios';
+import { createHmac } from 'crypto';
 
 // https://stackoverflow.com/questions/16758316/where-do-i-find-the-instagram-media-id-of-a-image
 // https://gist.github.com/sclark39/9daf13eea9c0b381667b61e3d2e7bc11
@@ -27,7 +27,7 @@ export const shortcodeToMediaID = (shortcode: string) => {
 
 export const shortcodeFromMediaID = (media_id: string) => {
     var o = bigInt(media_id).toString(64)
-    return o.replace(/<(\d+)>|(\w)/g, (m, m1, m2) => {
+    return o.replace(/<(\d+)>|(\w)/g, (_m: any, m1: string, m2: string) => {
         return ig_alphabet.charAt((m1)
             ? parseInt(m1)
             : bigint_alphabet.indexOf(m2))
@@ -94,4 +94,14 @@ export const bufferToStream = (buffer: Buffer) => {
 
 export const formatCookie = (setCookie: string[] | undefined) => {
     return setCookie?.map(x => x.match(/(.*?=.*?);/)?.[1])?.join('; ');
+}
+
+export const parseCookie = (str: string) => {
+    return str.split(';')
+        .map(v => v.trim().split('='))
+        .reduce((acc: any, v) => {
+            acc[decodeURIComponent(v[0])] = decodeURIComponent(v[1]);
+            delete acc['']
+            return acc;
+        }, {});
 }

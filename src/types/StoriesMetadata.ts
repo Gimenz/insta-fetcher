@@ -6,7 +6,8 @@ export interface IGStoriesMetadata {
 	username: string;
 	/** stories count */
 	stories_count: number;
-	stories: ItemStories[];
+	stories: ItemStories[] | null;
+	graphql: StoriesGraphQL;
 }
 
 /** an Array of simplified StoriesMetadata */

@@ -1,7 +1,14 @@
 // an example to get cookie using getCookie function
 
 import { getCookie, igApi, isIgPostUrl, shortcodeFormatter } from '../src'
-const ig = new igApi('your Cookie');
+
+// some example working with axios proxy
+const proxy = {
+    host: '127.0.0.1',
+    port: 1337,
+    protocol: 'http'
+}
+const ig = new igApi('your Cookie', { proxy });
 
 // you can easily get ig cookie. from anywhere, termux, terminal or etc
 getCookie('username', 'password').then(res => {
@@ -41,10 +48,10 @@ getCookie('username', 'password').then(res => {
     console.log(userV2);
 
     // ig url can be extracted , you can use shortcodeFormatter
-    const formatted = shortcodeFormatter('https://www.instagram.com/p/CW0hkIOFip9/?utm_source=ig_web_copy_link');
+    const formatted = shortcodeFormatter('https://www.instagram.com/p/C3M96a2vOCV/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA==');
     console.log(formatted);
 
     // or if you want to check wether the ig post is valid url?
-    const check = isIgPostUrl('https://www.instagram.com/p/CW0hkIOFip9/?utm_source=ig_web_copy_link');
+    const check = isIgPostUrl('https://www.instagram.com/p/C3M96a2vOCV/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA==');
     console.log(check);
 })();
