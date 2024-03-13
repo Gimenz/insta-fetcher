@@ -12,7 +12,7 @@ export interface IGStoriesMetadata {
 
 /** an Array of simplified StoriesMetadata */
 export interface ItemStories {
-	type: MediaType;
+	type: string;
 	mimetpye: MimeType;
 	/** Downloadable media url */
 	url: string;

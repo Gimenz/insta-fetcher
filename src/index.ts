@@ -215,19 +215,16 @@ export class igApi {
 	/**
 	 * fetch profile by username. including email, phone number 
 	 * @param {username} username
-	 * @param {boolean} simplifiedMetadata if set to false, it will return full of json result from api request. default is set to true
-	 * @returns {Promise<IGUserMetadata>}
+	 * @returns 
 	 */
-	public fetchUser = async (username: username, simplifiedMetadata: boolean = true): Promise<UserGraphQL | IGUserMetadata> => {
+	public fetchUser = async (username: username): Promise<IGUserMetadata> => {
 		const userID = await this.getIdByUsername(username);
 		const res = await this.FetchIGAPI(
 			config.instagram_api_v1,
 			`/users/${userID}/info/`
 		);
 		const graphql: UserGraphQL = res?.data;
-		if (!simplifiedMetadata) {
-			return graphql as UserGraphQL
-		} else return {
+		return {
 			id: graphql.user.pk,
 			username: graphql.user.username,
 			fullname: graphql.user.full_name,
@@ -247,7 +244,8 @@ export class igApi {
 			contact_phone_number: graphql.user.contact_phone_number,
 			public_email: graphql.user.public_email,
 			account_type: graphql.user.account_type,
-		} as IGUserMetadata;
+			...graphql
+		}
 	}
 
 	/**
@@ -261,7 +259,7 @@ export class igApi {
 			`/users/web_profile_info/?username=${username}`,
 			config.iPhone,
 		);
-		const graphql : Graphql = res?.data;
+		const graphql: Graphql = res?.data;
 		return graphql.data?.user as UserGraphQlV2;
 	}
 
@@ -270,7 +268,7 @@ export class igApi {
 	 * @param username 
 	 * @returns true if user is follow me
 	 */
-	public isFollowMe = async (username: username): Promise<boolean|undefined> => {
+	public isFollowMe = async (username: username): Promise<boolean | undefined> => {
 		const user = await this.fetchUserV2(username);
 		return user.follows_viewer;
 	}
@@ -391,12 +389,14 @@ export class igApi {
 		)
 		const graphql: HMedia = res?.data;
 		let result: ReelsMediaData[] = graphql.data.reels_media[0].items.map((item) => ({
+			owner: graphql.data.reels_media[0].owner,
 			media_id: item.id,
 			mimetype: item.is_video ? 'video/mp4' || 'video/gif' : 'image/jpeg',
 			taken_at: item.taken_at_timestamp,
 			type: item.is_video ? 'video' : 'image',
 			url: item.is_video ? item.video_resources[0].src : item.display_url,
-			dimensions: item.dimensions
+			dimensions: item.dimensions,
+			...graphql
 		}))
 
 		return result;

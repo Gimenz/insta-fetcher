@@ -7,18 +7,18 @@ export interface ReelsIds {
 }
 
 export interface HightlighGraphQL {
-    data:   IHighlightData;
+    data: IHighlightData;
     status: string;
 }
 
 export interface IHighlightData {
     viewer: null;
-    user:   IHighlightUser;
+    user: IHighlightUser;
 }
 
 export interface IHighlightUser {
-    has_public_story:      boolean;
-    edge_highlight_reels:  Edge;
+    has_public_story: boolean;
+    edge_highlight_reels: Edge;
     edge_related_profiles: Edge;
 }
 
@@ -31,12 +31,12 @@ export interface EdgeElement {
 }
 
 export interface Node {
-    __typename:                    string;
-    id:                            string;
-    cover_media:                   CoverMedia;
+    __typename: string;
+    id: string;
+    cover_media: CoverMedia;
     cover_media_cropped_thumbnail: CoverMediaCroppedThumbnail;
-    owner:                         HighlightOwner;
-    title:                         string;
+    owner: HighlightOwner;
+    title: string;
 }
 
 export interface CoverMedia {

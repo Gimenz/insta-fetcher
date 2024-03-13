@@ -8,11 +8,11 @@ import { Dimensions, DisplayResource, MediaType, MimeType, PageInfo } from ".";
 
 /** Instagram Simplified Highlights reels Metadata */
 export interface IHighlightsMetadata {
-	/** Instagram username */
-	username: string;
-	/** stories count */
-	highlights_count: number;
-	data: IReelsMetadata[];
+    /** Instagram username */
+    username: string;
+    /** stories count */
+    highlights_count: number;
+    data: IReelsMetadata[];
 }
 
 export interface IReelsMetadata {
@@ -24,19 +24,19 @@ export interface IReelsMetadata {
 }
 
 export interface ReelsMediaData {
+    owner: HighlightOwner
     media_id: string;
     mimetype: string;
     taken_at: number;
-    /** @type MediaType */
     type: string;
     /** Downloadable media url */
     url: string;
     dimensions: Dimensions;
-    
+
 }
 
 export interface HMedia {
-    data:   ReelsData;
+    data: ReelsData;
     status: string;
 }
 
@@ -45,42 +45,42 @@ export interface ReelsData {
 }
 
 export interface ReelsMedia {
-    __typename:        string;
-    id:                string;
+    __typename: string;
+    id: string;
     latest_reel_media: null;
-    can_reply:         boolean;
-    owner:             HighlightOwner;
-    items:             HighlightItem[];
+    can_reply: boolean;
+    owner: HighlightOwner;
+    items: HighlightItem[];
 }
 
 export interface HighlightItem {
-    audience:                   string;
-    edge_story_media_viewers:   EdgeStoryMediaViewers;
-    __typename:                 string;
-    id:                         string;
-    dimensions:                 Dimensions;
-    display_resources:          DisplayResource[];
-    display_url:                string;
-    media_preview:              null | string;
-    gating_info:                null;
-    fact_check_overall_rating:  null;
-    fact_check_information:     null;
-    sensitivity_friction_info:  null;
-    taken_at_timestamp:         number;
-    expiring_at_timestamp:      number;
-    story_cta_url:              null;
-    story_view_count:           null;
-    is_video:                   boolean;
-    owner:                      HighlightOwner;
-    tracking_token:             string;
-    tappable_objects:           any[];
-    story_app_attribution:      null;
+    audience: string;
+    edge_story_media_viewers: EdgeStoryMediaViewers;
+    __typename: string;
+    id: string;
+    dimensions: Dimensions;
+    display_resources: DisplayResource[];
+    display_url: string;
+    media_preview: null | string;
+    gating_info: null;
+    fact_check_overall_rating: null;
+    fact_check_information: null;
+    sensitivity_friction_info: null;
+    taken_at_timestamp: number;
+    expiring_at_timestamp: number;
+    story_cta_url: null;
+    story_view_count: null;
+    is_video: boolean;
+    owner: HighlightOwner;
+    tracking_token: string;
+    tappable_objects: any[];
+    story_app_attribution: null;
     edge_media_to_sponsor_user: EdgeMediaToSponsorUser;
-    muting_info:                null;
-    has_audio?:                 boolean;
-    overlay_image_resources?:   null;
-    video_duration?:            number;
-    video_resources:           VideoResource[];
+    muting_info: null;
+    has_audio?: boolean;
+    overlay_image_resources?: null;
+    video_duration?: number;
+    video_resources: VideoResource[];
 }
 
 export interface EdgeMediaToSponsorUser {
@@ -88,24 +88,24 @@ export interface EdgeMediaToSponsorUser {
 }
 
 export interface EdgeStoryMediaViewers {
-    count:     number;
+    count: number;
     page_info: PageInfo;
-    edges:     any[];
+    edges: any[];
 }
 
 export interface HighlightOwner {
-    id:                  string;
-    profile_pic_url:     string;
-    username:            string;
-    followed_by_viewer:  boolean;
+    id: string;
+    profile_pic_url: string;
+    username: string;
+    followed_by_viewer: boolean;
     requested_by_viewer: boolean;
-    __typename?:         string;
+    __typename?: string;
 }
 
 export interface VideoResource {
-    src:           string;
-    config_width:  number;
+    src: string;
+    config_width: number;
     config_height: number;
-    mime_type:     string;
-    profile:       string;
+    mime_type: string;
+    profile: string;
 }
