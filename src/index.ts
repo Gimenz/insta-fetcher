@@ -380,15 +380,19 @@ export class igApi {
 	 * @param {ids} ids of highlight
 	 * @returns 
 	 */
-	public _getReels = async (ids: string): Promise<ReelsMediaData[]> => {
+	public _getReels = async (ids: string): Promise<HMedia> => {
 		const res = await this.FetchIGAPI(
 			config.instagram_base_url,
 			'/graphql/query/',
 			config.iPhone,
 			{ params: highlight_media_query(ids) }
 		)
-		const graphql: HMedia = res?.data;
-		let result: ReelsMediaData[] = graphql.data.reels_media[0].items.map((item) => ({
+		const graphql = res?.data;
+		return graphql;
+	}
+
+	private formatHighlight = async (graphql: HMedia): Promise<ReelsMediaData[]> => {
+		return graphql.data.reels_media[0].items.map((item) => ({
 			owner: graphql.data.reels_media[0].owner,
 			media_id: item.id,
 			mimetype: item.is_video ? 'video/mp4' || 'video/gif' : 'image/jpeg',
@@ -396,10 +400,7 @@ export class igApi {
 			type: item.is_video ? 'video' : 'image',
 			url: item.is_video ? item.video_resources[0].src : item.display_url,
 			dimensions: item.dimensions,
-			...graphql
 		}))
-
-		return result;
 	}
 
 	/**
@@ -410,7 +411,7 @@ export class igApi {
 	public fetchHighlights = async (username: username): Promise<IHighlightsMetadata> => {
 		try {
 			const ids = await this._getReelsIds(username);
-			const reels = await Promise.all(ids.map(x => this._getReels(x.highlight_id)))
+			const reels = await Promise.all(ids.map(async x => this.formatHighlight(await this._getReels(x.highlight_id))))
 
 			let data: IReelsMetadata[] = [];
 			for (let i = 0; i < reels.length; i++) {
