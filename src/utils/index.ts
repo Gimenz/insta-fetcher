@@ -42,7 +42,7 @@ export const IGPostRegex = /(?:https?:\/\/)?(?:www\.)?(?:instagram\.com(?:\/.+?)
  * @returns {formattedShortcode}
  */
 export const shortcodeFormatter = (url: string): formattedShortcode => {
-    const splitted = IGPostRegex.exec(url) || '';
+    const splitted = /(?:https?:\/\/)?(?:www\.)?(?:instagram\.com(?:\/.+?)?\/(p|reel(?:s|)|tv)\/)([\w-]+)(?:\/)?(\?.*)?$/gim.exec(url) || '';
     return {
         type: splitted[1],
         shortcode: splitted[2],
@@ -57,7 +57,7 @@ export const shortcodeFormatter = (url: string): formattedShortcode => {
  * @returns 
  */
 export const isIgPostUrl = (url: string): boolean => {
-    return IGPostRegex.test(url);
+    return /(?:https?:\/\/)?(?:www\.)?(?:instagram\.com(?:\/.+?)?\/(p|reel(?:s|)|tv)\/)([\w-]+)(?:\/)?(\?.*)?$/gim.test(url);
 }
 
 /**

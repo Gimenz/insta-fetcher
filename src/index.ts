@@ -7,10 +7,10 @@ import fs from 'fs'
 import FormData from 'form-data';
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { bufferToStream, getPostType, parseCookie, randInt, shortcodeFormatter } from './utils/index';
-import { username, userId, seachTerm, url, IgCookie, ProductType, MediaType, IChangedProfilePicture, ISearchFollow, IGPostMetadata } from './types';
+import { username, userId, seachTerm, url, IgCookie, ProductType, MediaType, IChangedProfilePicture, ISearchFollow, IGPostMetadata, PostGraphQL } from './types';
 import { IGUserMetadata, UserGraphQL } from './types/UserMetadata';
 import { IGStoriesMetadata, ItemStories, StoriesGraphQL } from './types/StoriesMetadata';
-import { highlight_ids_query, highlight_media_query } from './helper/query';
+import { highlight_ids_query, highlight_media_query, post_shortcode_query } from './helper/query';
 import { HightlighGraphQL, ReelsIds } from './types/HighlightMetadata';
 import { HMedia, IHighlightsMetadata, IReelsMetadata, ReelsMediaData } from './types/HighlightMediaMetadata';
 import { IPostModels, IRawBody, MediaUrls } from './types/PostModels';
@@ -161,7 +161,6 @@ export class igApi {
 	public fetchPost = async (url: url): Promise<IPostModels> => {
 		const post = shortcodeFormatter(url);
 
-		//const req = (await IGFetchDesktop.get(`/${post.type}/${post.shortcode}/?__a=1`))
 		const metadata = await this.fetchPostByMediaId(post.media_id)
 
 		const item = metadata.items[0]
@@ -192,6 +191,17 @@ export class igApi {
 		} catch (error) {
 			throw error
 		}
+	}
+
+	public fetchPostByShortcode = async (shortcode: string): Promise<PostGraphQL> => {
+		const res = await this.FetchIGAPI(
+			config.instagram_base_url,
+			'/graphql/query/',
+			config.iPhone,
+			{ params: post_shortcode_query(shortcode) }
+		)
+		const graphql = res?.data;
+		return graphql;
 	}
 
 	/**

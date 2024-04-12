@@ -1,4 +1,4 @@
-import {  MediaType, Typename, User } from '.';
+import { MediaType, Typename, User } from '.';
 
 export interface IGPostMetadata {
 	/** an Instagram Username */
@@ -31,7 +31,13 @@ export interface links {
 }
 
 export interface PostGraphQL {
-	shortcode_media: ShortcodeMedia;
+	data?: PostData;
+	extensions?: Extensions;
+	status?: string;
+}
+
+export interface PostData {
+	shortcode_media?: ShortcodeMedia;
 }
 
 export interface ShortcodeMedia extends ViewerInfo {
@@ -291,10 +297,14 @@ export interface ShortcodeMediaOwner {
 }
 
 export interface ClipsMusicAttributionInfo {
-    artist_name:              string;
-    song_name:                string;
-    uses_original_audio:      boolean;
-    should_mute_audio:        boolean;
-    should_mute_audio_reason: string;
-    audio_id:                 string;
+	artist_name: string;
+	song_name: string;
+	uses_original_audio: boolean;
+	should_mute_audio: boolean;
+	should_mute_audio_reason: string;
+	audio_id: string;
+}
+
+export interface Extensions {
+	is_final?: boolean;
 }
