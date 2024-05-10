@@ -469,16 +469,29 @@ export class igApi {
 	 * fetches user posts, with pagination
 	 * @param username 
 	 * @param end_cursor get end_cursor by fetchUserPostsV2 first
+	 * @param num_posts number of posts to fetch (default 12)
 	 * @returns 
 	 */
 
-	public fetchUserPostsV2 = async (username: username, end_cursor = ''): Promise<IPaginatedPosts> => {
+	public fetchUserPostsV2 = async (username: username, end_cursor = '', num_posts = 12): Promise<IPaginatedPosts> => {
 		const userId = await this.getIdByUsername(username);
+		return this.fetchUserIDPostsV2(userId, end_cursor, num_posts)
+	}
+
+	/**
+	 * fetches user posts, with pagination
+	 * @param user_id user id from getIdByUsername. See fetchUserPostsV2 if using username
+	 * @param end_cursor get end_cursor by fetchUserPostsV2 first
+	 * @param num_posts number of posts to fetch (default 12)
+	 * @returns
+	 */
+
+	public fetchUserIDPostsV2 = async (user_id: string, end_cursor = '', num_posts = 12): Promise<IPaginatedPosts> => {
 		const params = {
 			'query_hash': '69cba40317214236af40e7efa697781d',
 			'variables': {
-				"id": userId,
-				"first": 12,
+				"id": user_id,
+				"first": num_posts,
 				"after": end_cursor
 			}
 		}
