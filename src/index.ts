@@ -1,13 +1,13 @@
 /* Muhamad Ristiyanto _ https://github.com/Gimenz
  * Created, Published at Selasa, 9 Maret 2021
- * Modified, Updated at Minggu, 20 Februari 2022
+ * Modified, Updated at Minggu, 19 Januari 2025
  */
 
 import fs from 'fs'
 import FormData from 'form-data';
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { bufferToStream, getPostType, parseCookie, randInt, shortcodeFormatter } from './utils/index';
-import { username, userId, seachTerm, url, IgCookie, ProductType, MediaType, IChangedProfilePicture, ISearchFollow, IGPostMetadata, PostGraphQL } from './types';
+import { username, userId, seachTerm, url, IgCookie, ProductType, MediaType, IChangedProfilePicture, ISearchFollow, IGPostMetadata, PostGraphQL, UserFollow } from './types';
 import { IGUserMetadata, UserGraphQL } from './types/UserMetadata';
 import { IGStoriesMetadata, ItemStories, StoriesGraphQL } from './types/StoriesMetadata';
 import { highlight_ids_query, highlight_media_query, post_shortcode_query } from './helper/query';
@@ -94,7 +94,7 @@ export class igApi {
 	public searchFollower = async (userId: userId, seachTerm: seachTerm): Promise<ISearchFollow> => {
 		const res = await this.FetchIGAPI(
 			config.instagram_api_v1,
-			`/friendships/${userId}/followers/?count=12&query=${seachTerm}&search_surface=follow_list_page`,
+			`/friendships/${userId}/followers/?count=50&query=${seachTerm}&search_surface=follow_list_page`,
 			config.iPhone,
 		);
 		return res?.data || res
@@ -109,55 +109,58 @@ export class igApi {
 		return res?.data || res
 	}
 
-	/**
- * Fetch all followers of a user
- * @param userId - The user ID of the target account
- * @returns A list of usernames of all followers
- */
-public getAllFollowers = async (userId: userId): Promise<string[]> => {
-    let followers: string[] = [];
-    let nextMaxId: string | undefined = undefined;
+	public getAllFollowers = async (userId: string, searchTerm: string = ""): Promise<ISearchFollow> => {
+		let followers: UserFollow[] = [];
+		let nextMaxId: string | undefined = undefined;
 
-    do {
-        const res = await this.FetchIGAPI(
-            config.instagram_api_v1,
-            `/friendships/${userId}/followers/`,
-            config.iPhone,
-            { params: { count: 50, max_id: nextMaxId } } // Adjust `count` if necessary
-        );
-        
-        const data = res?.data;
-        followers.push(...data.users.map((user: any) => user.username));
-        nextMaxId = data.next_max_id; // Set for next page
-    } while (nextMaxId);
+		do {
+			const res = await this.FetchIGAPI(
+				config.instagram_api_v1,
+				`/friendships/${userId}/followers/`,
+				config.iPhone,
+				{
+					params: {
+						count: 50, // Adjust `count` to the maximum allowed by Instagram
+						query: searchTerm,
+						max_id: nextMaxId, // Pagination parameter
+						search_surface: "follow_list_page",
+					},
+				}
+			);
 
-    return followers;
-};
+			const data: ISearchFollow = res?.data || res;
+			followers.push(...(data.users || []));
+			nextMaxId = data.next_max_id; // Update nextMaxId for the next page
+		} while (nextMaxId);
 
-/**
- * Fetch all following of a user
- * @param userId - The user ID of the target account
- * @returns A list of usernames of all following
- */
-public getAllFollowing = async (userId: userId): Promise<string[]> => {
-    let following: string[] = [];
-    let nextMaxId: string | undefined = undefined;
+		return { users: followers, status: "success" };
+	};
 
-    do {
-        const res = await this.FetchIGAPI(
-            config.instagram_api_v1,
-            `/friendships/${userId}/following/`,
-            config.iPhone,
-            { params: { count: 50, max_id: nextMaxId } } // Adjust `count` if necessary
-        );
-        
-        const data = res?.data;
-        following.push(...data.users.map((user: any) => user.username));
-        nextMaxId = data.next_max_id; // Set for next page
-    } while (nextMaxId);
+	public getAllFollowing = async (userId: string, searchTerm: string = ""): Promise<ISearchFollow> => {
+		let following: UserFollow[] = [];
+		let nextMaxId: string | undefined = undefined;
 
-    return following;
-};
+		do {
+			const res = await this.FetchIGAPI(
+				config.instagram_api_v1,
+				`/friendships/${userId}/following/`,
+				config.iPhone,
+				{
+					params: {
+						count: 50, // Adjust `count` to the maximum allowed by Instagram
+						query: searchTerm,
+						max_id: nextMaxId, // Pagination parameter
+					},
+				}
+			);
+
+			const data: ISearchFollow = res?.data || res;
+			following.push(...(data.users || []));
+			nextMaxId = data.next_max_id; // Update nextMaxId for the next page
+		} while (nextMaxId);
+
+		return { users: following, status: "success" };
+	};
 
 
 	private _formatSidecar = (data: IRawBody): Array<MediaUrls> => {
@@ -456,7 +459,7 @@ public getAllFollowing = async (userId: userId): Promise<string[]> => {
 		return graphql.data.reels_media[0].items.map((item) => ({
 			owner: graphql.data.reels_media[0].owner,
 			media_id: item.id,
-			mimetype: item.is_video ? 'video/mp4' || 'video/gif' : 'image/jpeg',
+			mimetype: item.is_video ? 'video/mp4' : 'image/jpeg',
 			taken_at: item.taken_at_timestamp,
 			type: item.is_video ? 'video' : 'image',
 			url: item.is_video ? item.video_resources[0].src : item.display_url,
