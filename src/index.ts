@@ -109,6 +109,57 @@ export class igApi {
 		return res?.data || res
 	}
 
+	/**
+ * Fetch all followers of a user
+ * @param userId - The user ID of the target account
+ * @returns A list of usernames of all followers
+ */
+public getAllFollowers = async (userId: userId): Promise<string[]> => {
+    let followers: string[] = [];
+    let nextMaxId: string | undefined = undefined;
+
+    do {
+        const res = await this.FetchIGAPI(
+            config.instagram_api_v1,
+            `/friendships/${userId}/followers/`,
+            config.iPhone,
+            { params: { count: 50, max_id: nextMaxId } } // Adjust `count` if necessary
+        );
+        
+        const data = res?.data;
+        followers.push(...data.users.map((user: any) => user.username));
+        nextMaxId = data.next_max_id; // Set for next page
+    } while (nextMaxId);
+
+    return followers;
+};
+
+/**
+ * Fetch all following of a user
+ * @param userId - The user ID of the target account
+ * @returns A list of usernames of all following
+ */
+public getAllFollowing = async (userId: userId): Promise<string[]> => {
+    let following: string[] = [];
+    let nextMaxId: string | undefined = undefined;
+
+    do {
+        const res = await this.FetchIGAPI(
+            config.instagram_api_v1,
+            `/friendships/${userId}/following/`,
+            config.iPhone,
+            { params: { count: 50, max_id: nextMaxId } } // Adjust `count` if necessary
+        );
+        
+        const data = res?.data;
+        following.push(...data.users.map((user: any) => user.username));
+        nextMaxId = data.next_max_id; // Set for next page
+    } while (nextMaxId);
+
+    return following;
+};
+
+
 	private _formatSidecar = (data: IRawBody): Array<MediaUrls> => {
 		const gql = data.items[0]
 		let urls: MediaUrls[] = []
