@@ -25,6 +25,8 @@ import { IPaginatedPosts } from './types/PaginatedPosts';
 export * from './utils'
 export * as InstagramMetadata from './types'
 export * from './helper/Session';
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 export class igApi {
 	/**
 	 * Recommended to set cookie for most all IG Request
@@ -131,6 +133,7 @@ export class igApi {
 			const data: ISearchFollow = res?.data || res;
 			followers.push(...(data.users || []));
 			nextMaxId = data.next_max_id; // Update nextMaxId for the next page
+			await sleep(2000);
 		} while (nextMaxId);
 
 		return { users: followers, status: "success" };
@@ -157,6 +160,7 @@ export class igApi {
 			const data: ISearchFollow = res?.data || res;
 			following.push(...(data.users || []));
 			nextMaxId = data.next_max_id; // Update nextMaxId for the next page
+			await sleep(2000);
 		} while (nextMaxId);
 
 		return { users: following, status: "success" };
