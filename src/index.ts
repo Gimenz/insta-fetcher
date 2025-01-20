@@ -122,7 +122,7 @@ export class igApi {
 				config.iPhone,
 				{
 					params: {
-						count: 50, // Adjust `count` to the maximum allowed by Instagram
+						count: 12, // Adjust `count` to the maximum allowed by Instagram
 						query: searchTerm,
 						max_id: nextMaxId, // Pagination parameter
 						search_surface: "follow_list_page",
@@ -150,7 +150,7 @@ export class igApi {
 				config.iPhone,
 				{
 					params: {
-						count: 50, // Adjust `count` to the maximum allowed by Instagram
+						count: 12, // Adjust `count` to the maximum allowed by Instagram
 						query: searchTerm,
 						max_id: nextMaxId, // Pagination parameter
 					},
