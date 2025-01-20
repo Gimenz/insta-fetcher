@@ -1,6 +1,6 @@
 /* Muhamad Ristiyanto _ https://github.com/Gimenz
  * Created, Published at Selasa, 9 Maret 2021
- * Modified, Updated at Senin, 20 Januari 2025
+ * Modified, Updated at Minggu, 19 Januari 2025
  */
 
 import fs from 'fs'
@@ -184,6 +184,13 @@ export class igApi {
 			return [];
 		}
 	};
+
+	public getStoryById = async (reelId: string): Promise<any> => {
+		const res = await this.FetchIGAPI(config.instagram_api_v1, `/feed/reels_media/?reel_ids=${reelId}`, config.android)
+		if (res && res.data && res.data.reels_media && res.data.reels_media.length > 0) {
+			return res.data.reels_media[0];
+		}
+	}
 
 	public viewStories = async (reelId: string, itemId: string): Promise<AxiosResponse | undefined> => {
 		try {
