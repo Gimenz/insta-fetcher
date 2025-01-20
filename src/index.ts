@@ -188,7 +188,7 @@ export class igApi {
 	public viewStories = async (reelId: string, itemId: string): Promise<AxiosResponse | undefined> => {
 		try {
 			const res = await this.FetchIGAPI(
-				config.instagram_api_v1,
+				config.instagram_api_v2,
 				`/media/seen/`,
 				config.android,
 				{
