@@ -1,6 +1,6 @@
 /* Muhamad Ristiyanto _ https://github.com/Gimenz
  * Created, Published at Selasa, 9 Maret 2021
- * Modified, Updated at Minggu, 19 Januari 2025
+ * Modified, Updated at Senin, 20 Januari 2025
  */
 
 import fs from 'fs'
@@ -164,6 +164,61 @@ export class igApi {
 		} while (nextMaxId);
 
 		return { users: following, status: "success" };
+	};
+
+	/*
+	*	add new for automate view stories & like stories
+	*	fitur dari Rizka Nugraha
+	*/
+
+	public getStories = async (): Promise<ItemStories[]> => {
+		try {
+			const res = await this.FetchIGAPI(
+				config.instagram_api_v1,
+				`/feed/reels_tray/`,
+				config.android
+			);
+			return res?.data?.tray || [];
+		} catch (error) {
+			console.error("Error fetching stories:", error);
+			return [];
+		}
+	};
+
+	public viewStories = async (reelId: string, itemId: string): Promise<AxiosResponse | undefined> => {
+		try {
+			const res = await this.FetchIGAPI(
+				config.instagram_api_v1,
+				`/media/seen/`,
+				config.android,
+				{
+					data: {
+						reels: { [`${reelId}_${itemId}`]: [0] }, // Reel ID and timestamp
+						reel_media_id: itemId,
+						reel_author_id: reelId,
+						view_source: "feed_timeline",
+					},
+					method: "POST",
+				}
+			);
+			return res;
+		} catch (error) {
+			console.error("Error viewing story:", error);
+		}
+	};
+
+	public likeStories = async (mediaId: string): Promise<AxiosResponse | undefined> => {
+		try {
+			const res = await this.FetchIGAPI(
+				config.instagram_api_v1,
+				`/media/${mediaId}/like/`,
+				config.android,
+				{ method: "POST" }
+			);
+			return res;
+		} catch (error) {
+			console.error("Error liking story:", error);
+		}
 	};
 
 
