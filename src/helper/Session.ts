@@ -1,4 +1,4 @@
-import axios, { AxiosRequestHeaders, AxiosResponse } from "axios";
+import axios, { AxiosResponse } from "axios";
 import { formatCookie } from "../utils";
 import { config } from "../config";
 import { csrfToken, IgCookie, LoginData, password, username } from "../types";
@@ -31,7 +31,7 @@ export const getSessionId = async (username: username, password: password): Prom
 
     try {
         const csrfToken = await getCsrfToken();
-        const genHeaders: AxiosRequestHeaders = {
+        const genHeaders: Record<string, string> = {
             'X-CSRFToken': csrfToken,
             'user-agent': config.desktop,
             'cache-Control': 'no-cache',

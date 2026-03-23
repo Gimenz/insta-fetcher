@@ -11,6 +11,7 @@ export * from './UserMetadata'
 export * from './PaginatedPosts'
 export * from './LoginData'
 export * from './searchFollow'
+export * from './UserReel'
 
 /** instagram username */
 export type username = string;

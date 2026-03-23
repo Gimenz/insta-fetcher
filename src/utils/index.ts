@@ -1,7 +1,6 @@
 import { Readable } from 'stream';
 import { formattedShortcode, IGPostType, postType, ProductType } from '../types/index';
 import bigInt from 'big-integer';
-import { createHmac } from 'crypto';
 
 // https://stackoverflow.com/questions/16758316/where-do-i-find-the-instagram-media-id-of-a-image
 // https://gist.github.com/sclark39/9daf13eea9c0b381667b61e3d2e7bc11

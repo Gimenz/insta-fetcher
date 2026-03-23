@@ -31,20 +31,21 @@ export interface links {
 }
 
 export interface PostGraphQL {
-	data?: PostData;
-	extensions?: Extensions;
-	status?: string;
+	data: Data;
+	extensions: Extensions;
+	status: string;
 }
 
-export interface PostData {
-	shortcode_media?: ShortcodeMedia;
+export interface Data {
+	xdt_shortcode_media: XdtShortcodeMedia;
 }
 
-export interface ShortcodeMedia extends ViewerInfo {
-	[x: string]: any;
+export interface XdtShortcodeMedia {
 	__typename: string;
+	__isXDTGraphMediaInterface: string;
 	id: string;
 	shortcode: string;
+	thumbnail_src: string;
 	dimensions: Dimensions;
 	gating_info: null;
 	fact_check_overall_rating: null;
@@ -52,14 +53,26 @@ export interface ShortcodeMedia extends ViewerInfo {
 	sensitivity_friction_info: null;
 	sharing_friction_info: SharingFrictionInfo;
 	media_overlay_info: null;
-	media_preview: null;
-	video_url: string;
+	media_preview: string;
 	display_url: string;
 	display_resources: DisplayResource[];
+	accessibility_caption: null;
+	dash_info: DashInfo;
+	has_audio: boolean;
+	video_url: string;
+	video_view_count: number;
+	video_play_count: number;
+	encoding_status: null;
+	is_published: boolean;
+	product_type: string;
+	title: string;
+	video_duration: number;
+	clips_music_attribution_info: null;
 	is_video: boolean;
 	tracking_token: string;
 	upcoming_event: null;
-	edge_media_to_tagged_user: EdgeMediaToTaggedUser;
+	edge_media_to_tagged_user: EdgeMediaToCaptionClass;
+	owner: XdtShortcodeMediaOwner;
 	edge_media_to_caption: EdgeMediaToCaptionClass;
 	can_see_insights_as_brand: boolean;
 	caption_is_edited: boolean;
@@ -76,32 +89,16 @@ export interface ShortcodeMedia extends ViewerInfo {
 	is_affiliate: boolean;
 	is_paid_partnership: boolean;
 	location: null;
-	owner: ShortcodeMediaOwner;
-	is_ad: boolean;
-	edge_web_media_to_related_media: EdgeMediaToCaptionClass;
-	coauthor_producers: any[];
-	edge_sidecar_to_children: EdgeSidecarToChildren;
-	edge_related_profiles: EdgeMediaToCaptionClass;
-	accessibility_caption: null;
-	dash_info: DashInfo;
-	has_audio: boolean;
-	video_view_count: number;
-	video_play_count: null;
-	encoding_status: null;
-	is_published: boolean;
-	product_type: string;
-	title: string;
-	video_duration: number;
-	thumbnail_src: string;
-	clips_music_attribution_info: null;
-}
-
-export interface ViewerInfo {
+	nft_asset_info: null;
 	viewer_has_liked: boolean;
 	viewer_has_saved: boolean;
 	viewer_has_saved_to_collection: boolean;
 	viewer_in_photo_of_you: boolean;
 	viewer_can_reshare: boolean;
+	is_ad: boolean;
+	edge_web_media_to_related_media: EdgeMediaToCaptionClass;
+	coauthor_producers: any[];
+	pinned_for_users: any[];
 }
 
 export interface DashInfo {
@@ -110,9 +107,6 @@ export interface DashInfo {
 	number_of_qualities: number;
 }
 
-/**
- * Media pixels dimensions
- */
 export interface Dimensions {
 	height: number;
 	width: number;
@@ -135,51 +129,16 @@ export interface EdgeMediaToParentCommentClass {
 	edges: EdgeMediaPreviewCommentEdge[];
 }
 
-export interface PurpleNode extends ViewerInfo {
-	__typename: Typename;
+export interface PurpleNode {
 	id: string;
 	text: string;
 	created_at: number;
 	did_report_as_spam: boolean;
+	owner: NodeOwner;
+	viewer_has_liked: boolean;
 	edge_liked_by: EdgeFollowedByClass;
 	is_restricted_pending: boolean;
 	edge_threaded_comments?: EdgeMediaToParentCommentClass;
-	shortcode: string;
-	dimensions: Dimensions;
-	display_url: string;
-	edge_media_to_tagged_user: EdgeMediaToTaggedUser;
-	fact_check_overall_rating: null;
-	fact_check_information: null;
-	gating_info: null;
-	sensitivity_friction_info: any;
-	sharing_friction_info: SharingFrictionInfo;
-	media_overlay_info: null;
-	media_preview: null | string;
-	owner: User;
-	is_video: boolean;
-	has_upcoming_event: boolean;
-	accessibility_caption: null | string;
-	edge_media_to_caption: EdgeMediaToCaptionClass;
-	comments_disabled: boolean;
-	taken_at_timestamp: number;
-	location: Location | null;
-	thumbnail_src: string;
-	thumbnail_resources: DisplayResource[];
-	coauthor_producers: any[];
-	dash_info?: DashInfo;
-	has_audio?: boolean;
-	tracking_token?: string;
-	video_url?: string;
-	video_view_count?: number;
-	felix_profile_grid_crop?: null;
-	product_type?: string;
-	clips_music_attribution_info?: ClipsMusicAttributionInfo;
-	edge_sidecar_to_children?: EdgeSidecarToChildren;
-	pinned_for_users: any[];
-	nft_asset_info: any;
-	edge_media_to_sponsor_user: EdgeMediaToCaptionClass;
-	is_affiliate: boolean;
-	is_paid_partnership: boolean;
 }
 
 export interface EdgeMediaPreviewCommentEdge {
@@ -188,7 +147,7 @@ export interface EdgeMediaPreviewCommentEdge {
 
 export interface PageInfo {
 	has_next_page: boolean;
-	end_cursor: string;
+	end_cursor: string | undefined;
 }
 
 export interface EdgeFollowedByClass {
@@ -211,77 +170,16 @@ export interface EdgeMediaToCaptionEdge {
 }
 
 export interface FluffyNode {
+	created_at: string;
 	text: string;
-}
-
-export interface EdgeMediaToTaggedUser {
-	edges: EdgeMediaToTaggedUserEdge[];
-}
-
-export interface EdgeMediaToTaggedUserEdge {
-	node: TentacledNode;
-}
-
-export interface TentacledNode {
-	user: UserNode;
-	x: number;
-	y: number;
-}
-
-export interface UserNode {
-	full_name: string;
-	followed_by_viewer: boolean;
 	id: string;
+}
+
+export interface XdtShortcodeMediaOwner {
+	id: string;
+	username: string;
 	is_verified: boolean;
 	profile_pic_url: string;
-	username: string;
-}
-
-export interface EdgeSidecarToChildren {
-	edges: EdgeSidecarToChildrenEdge[];
-}
-
-export interface EdgeSidecarToChildrenEdge {
-	__typename: string;
-	node: StickyNode;
-}
-
-export interface StickyNode {
-	__typename: string;
-	id: string;
-	shortcode: string;
-	dimensions: Dimensions;
-	gating_info: null;
-	fact_check_overall_rating: null;
-	fact_check_information: null;
-	sensitivity_friction_info: null;
-	sharing_friction_info: SharingFrictionInfo;
-	media_overlay_info: null;
-	media_preview: string;
-	display_url: string;
-	video_url: string;
-	display_resources: DisplayResource[];
-	accessibility_caption: string;
-	is_video: boolean;
-	tracking_token: string;
-	upcoming_event: null;
-	owner: User;
-	has_upcoming_event: boolean;
-	dash_info?: DashInfo;
-	has_audio?: boolean;
-	video_view_count?: number;
-}
-
-export interface SharingFrictionInfo {
-	should_have_sharing_friction: boolean;
-	bloks_app_url: null;
-}
-
-export interface ShortcodeMediaOwner {
-	id: string;
-	is_verified: boolean;
-	profile_pic_url: string;
-	username: string;
 	blocked_by_viewer: boolean;
 	restricted_by_viewer: boolean;
 	followed_by_viewer: boolean;
@@ -296,15 +194,11 @@ export interface ShortcodeMediaOwner {
 	edge_followed_by: EdgeFollowedByClass;
 }
 
-export interface ClipsMusicAttributionInfo {
-	artist_name: string;
-	song_name: string;
-	uses_original_audio: boolean;
-	should_mute_audio: boolean;
-	should_mute_audio_reason: string;
-	audio_id: string;
+export interface SharingFrictionInfo {
+	should_have_sharing_friction: boolean;
+	bloks_app_url: null;
 }
 
 export interface Extensions {
-	is_final?: boolean;
+	is_final: boolean;
 }

@@ -4,7 +4,7 @@
 //
 //   "Set quicktype target language"
 
-import { Dimensions, postType, SharingFrictionInfo } from '.';
+import { Dimensions, NodeTypename, postType, SharingFrictionInfo } from '.';
 
 export interface IPostModels {
 	/** an Instagram Username */
@@ -124,6 +124,51 @@ export interface Item {
 	supports_reel_reactions: boolean;
 	can_send_custom_emojis: boolean;
 	show_one_tap_fb_share_tooltip: boolean;
+	ad_id: null;
+	boosted_status: null;
+	boost_unavailable_identifier: null;
+	boost_unavailable_reason: null;
+	feed_demotion_control: null;
+	feed_recs_demotion_control: null;
+	inventory_source: null;
+	sponsor_tags: null;
+	affiliate_info: null;
+	link: null;
+	story_cta: null;
+	group: null;
+	owner: null;
+	coauthor_producers: any[];
+	invited_coauthor_producers: any[];
+	follow_hashtag_info: null;
+	title: null;
+	comments_disabled: null;
+	commenting_disabled_for_viewer: null;
+	preview: null;
+	social_context: any[];
+	ig_media_sharing_disabled: boolean;
+	usertags: Usertags | null;
+	media_overlay_info: null;
+	carousel_parent_id: null;
+	location: Location | null;
+	clips_attribution_info: null;
+	accessibility_caption: null | string;
+	audience: null;
+	display_uri: null;
+	thumbnails: null;
+	timeline_pinned_user_ids: any[];
+	upcoming_event: null;
+	logging_info_token: null;
+	explore: null;
+	main_feed_carousel_starting_media_id: null;
+	is_seen: null;
+	open_carousel_submission_state: null | string;
+	previous_submitter: null;
+	all_previous_submitters: null;
+	headline: null;
+	saved_collection_ids: null;
+	has_viewer_saved: null;
+	media_level_comment_controls: null;
+	__typename: NodeTypename;
 }
 
 export interface Caption {
@@ -203,6 +248,23 @@ export interface CarouselMedia {
 	video_dash_manifest?: string;
 	video_codec?: string;
 	number_of_qualities?: number;
+	accessibility_caption: string;
+	inventory_source: null;
+	user: null;
+	preview: string;
+	organic_tracking_token: null;
+	saved_collection_ids: null;
+	has_viewer_saved: null;
+	media_overlay_info: null;
+	display_uri: null;
+	taken_at: number;
+	previous_submitter: null;
+	link: null;
+	story_cta: null;
+	has_liked: null;
+	like_count: null;
+	logging_info_token: null;
+	owner: null;
 }
 
 export interface CommentInformTreatment {
@@ -231,6 +293,7 @@ export interface ClipsMetadata {
 	contextual_highlight_info: null;
 	clips_creation_entry_point: string;
 	audio_ranking_info: AudioRankingInfo;
+	achievements_info: AchievementsInfo;
 }
 
 export interface AdditionalAudioInfo {
@@ -288,7 +351,7 @@ export interface MusicAssetInfo {
 	territory_validity_periods: TerritoryValidityPeriods;
 }
 
-export interface TerritoryValidityPeriods {}
+export interface TerritoryValidityPeriods { }
 
 export interface MusicConsumptionInfo {
 	ig_artist: CoauthorProducer;
@@ -349,6 +412,10 @@ export interface OriginalSoundInfo {
 	is_explicit: boolean;
 	original_audio_subtype: string;
 	is_audio_automatically_attributed: boolean;
+}
+
+export interface AchievementsInfo {
+	show_achievements: boolean;
 }
 
 export interface ConsumptionInfo {
@@ -541,6 +608,11 @@ export interface ItemUser {
 	has_highlight_reels: boolean;
 	live_broadcast_id: null;
 	live_broadcast_visibility: null;
+	__typename: UserTypename;
+}
+
+export enum UserTypename {
+	XDTUserDict = "XDTUserDict",
 }
 
 export interface FriendshipStatus {

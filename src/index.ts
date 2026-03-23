@@ -21,6 +21,7 @@ import { PostStoryResult } from './types/PostStoryResult';
 import { MediaConfigureOptions } from './types/MediaConfigureOptions';
 import { UserGraphQlV2, Graphql } from './types/UserGraphQlV2';
 import { IPaginatedPosts } from './types/PaginatedPosts';
+import { ProfileReel } from './types/UserReel';
 
 export * from './utils'
 export * as InstagramMetadata from './types'
@@ -38,20 +39,19 @@ export class igApi {
 	}
 	private accountUserId = this.IgCookie.match(/sessionid=(.*?);/)?.[1].split('%')[0] || ''
 
-	private buildHeaders = (agent: string = config.android, options?: any) => {
+	protected buildHeaders = (agent: string = config.android, options?: any) => {
 		return {
 			'user-agent': agent,
 			'cookie': `${this.IgCookie}`,
 			'authority': 'www.instagram.com',
 			'content-type': 'application/x-www-form-urlencoded',
-			'origin': 'https://www.instagram.com',
+			'origin': 'https://i.instagram.com',
 			'accept-language': 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
 			'sec-fetch-site': 'same-origin',
 			'sec-fetch-mode': 'cors',
 			'sec-fetch-dest': 'empty',
 			'x-ig-app-id': 936619743392459,
-			'x-ig-www-claim': 'hmac.AR3W0DThY2Mu5Fag4sW5u3RhaR3qhFD_5wvYbOJOD9qaPjIf',
-			'x-instagram-ajax': 1,
+			'X-IG-WWW-Claim': '0',
 			'x-requested-with': 'XMLHttpRequest',
 			...options
 		};
@@ -64,7 +64,7 @@ export class igApi {
 	 * @param agent 
 	 * @param AxiosOptions 
 	 */
-	private FetchIGAPI = (baseURL: string, url: string = '', agent: string = config.android, AxiosOptions: AxiosRequestConfig = {}): Promise<AxiosResponse> | undefined => {
+	protected FetchIGAPI = (baseURL: string, url: string = '', agent: string = config.android, AxiosOptions: AxiosRequestConfig = {}): Promise<AxiosResponse> | undefined => {
 		try {
 			return axios({
 				baseURL,
@@ -194,11 +194,17 @@ export class igApi {
 	}
 
 	public fetchPostByShortcode = async (shortcode: string): Promise<PostGraphQL> => {
+		const params = {
+			variables: {
+				shortcode
+			},
+			doc_id: '8845758582119845'
+		}
 		const res = await this.FetchIGAPI(
 			config.instagram_base_url,
 			'/graphql/query/',
 			config.iPhone,
-			{ params: post_shortcode_query(shortcode) }
+			{ params }
 		)
 		const graphql = res?.data;
 		return graphql;
@@ -266,11 +272,11 @@ export class igApi {
 	public fetchUserV2 = async (username: username) => {
 		const res = await this.FetchIGAPI(
 			config.instagram_api_v1,
-			`/users/web_profile_info/?username=${username}`,
+			`/users/${username}/usernameinfo/`,
 			config.iPhone,
 		);
 		const graphql: Graphql = res?.data;
-		return graphql.data?.user as UserGraphQlV2;
+		return graphql?.user as UserGraphQlV2;
 	}
 
 	/**
@@ -405,7 +411,7 @@ export class igApi {
 		return graphql.data.reels_media[0].items.map((item) => ({
 			owner: graphql.data.reels_media[0].owner,
 			media_id: item.id,
-			mimetype: item.is_video ? 'video/mp4' || 'video/gif' : 'image/jpeg',
+			mimetype: item.is_video ? 'video/mp4' : 'image/jpeg',
 			taken_at: item.taken_at_timestamp,
 			type: item.is_video ? 'video' : 'image',
 			url: item.is_video ? item.video_resources[0].src : item.display_url,
@@ -468,36 +474,83 @@ export class igApi {
 	/**
 	 * fetches user posts, with pagination
 	 * @param username 
-	 * @param end_cursor get end_cursor by fetchUserPostsV2 first
+	 * @param next_max_id get next_max_id by fetchUserPostsV2 first
 	 * @param num_posts number of posts to fetch (default 12)
 	 * @returns 
 	 */
 
-	public fetchUserPostsV2 = async (username: username, end_cursor = '', num_posts = 12): Promise<IPaginatedPosts> => {
+	public fetchUserPostsV2 = async (username: username, next_max_id = '', num_posts = 12): Promise<IPaginatedPosts> => {
 		const userId = await this.getIdByUsername(username);
-		return this.fetchUserIDPostsV2(userId, end_cursor, num_posts)
+		return this.fetchUserIDPostsV2(userId, next_max_id, num_posts)
 	}
 
 	/**
 	 * fetches user posts, with pagination
 	 * @param user_id user id from getIdByUsername. See fetchUserPostsV2 if using username
-	 * @param end_cursor get end_cursor by fetchUserPostsV2 first
+	 * @param next_max_id get next_max_id by fetchUserPostsV2 first
 	 * @param num_posts number of posts to fetch (default 12)
 	 * @returns
 	 */
 
-	public fetchUserIDPostsV2 = async (user_id: string, end_cursor = '', num_posts = 12): Promise<IPaginatedPosts> => {
+	public fetchUserIDPostsV2 = async (userId: string, next_max_id = '', num_posts = 12): Promise<IPaginatedPosts> => {
 		const params = {
-			'query_hash': '69cba40317214236af40e7efa697781d',
-			'variables': {
-				"id": user_id,
-				"first": num_posts,
-				"after": end_cursor
-			}
+			count: num_posts,
+			max_id: next_max_id,
 		}
-		const res = await this.FetchIGAPI(config.instagram_base_url, '/graphql/query/', config.android, { params })
+		const res = await this.FetchIGAPI(
+			config.instagram_api_v1,
+			`/feed/user/${userId}/`,
+			config.iPhone,
+			{ params }
+		)
+		return res?.data
+	}
 
-		return res?.data?.data.user.edge_owner_to_timeline_media
+	/**
+	 * fetch user reel same as reel tab on app
+	 * @param username username ig
+	 * @param end_cursor 
+	 * @param count 
+	 * @returns 
+	 */
+	public fetchUserReel = async (username: string, end_cursor: string | null | undefined = '', count = 12): Promise<ProfileReel> => {
+		const user_id = await this.getIdByUsername(username);
+		const baseQuery = {
+			data: {
+				include_feed_video: true,
+				page_size: count,
+				target_user_id: user_id,
+			},
+		};
+		const params = {
+			doc_id: "8931245513664134",
+			variables: JSON.stringify({
+				...baseQuery,
+				after: end_cursor,
+				before: null,
+				"first": count,
+				"last": null,
+			}),
+		}
+		const res = await this.FetchIGAPI(config.instagram_base_url, '/graphql/query/', config.android, { params, method: 'POST' })
+
+		return res?.data?.data
+	}
+
+	public getReelData = async (code: string): Promise<any> => {
+		const res = await this.FetchIGAPI(config.instagram_base_url, `/reel/${code}`, config.android, {
+			headers: {
+				'Accept': "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
+			}
+		})
+
+		const match = res?.data.match(/"xdt_api__v1__media__shortcode__web_info":\{"items":\[(.*?)\]\}\},"extensions":/)
+		if (!match) {
+			return new Error("eror")
+		}
+
+		const originalReelData = JSON.parse(match[1])
+		return originalReelData
 	}
 
 	private uploadPhoto = async (photo: string | Buffer) => {

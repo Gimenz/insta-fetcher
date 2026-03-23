@@ -20,31 +20,31 @@ getCookie('username', 'password').then(res => {
 (async () => {
 
     // fetch a Post
-    const post = await ig.fetchPost('https://www.instagram.com/p/CW0hkIOFip9/?utm_source=ig_web_copy_link');
+    const post = await ig.fetchPost('https://www.instagram.com/p/DWNYWlaCXOc/?img_index=1');
     console.log(post);
 
     // fetch user posts, with pagination support
-    const userPosts = await ig.fetchUserPostsV2('ketoprak_jowo');
+    const userPosts = await ig.fetchUserPostsV2('fiiyya21');
     console.log(userPosts);
 
     // use end_cursor to get nextPage posts, end_cursor you can get it by fetch user posts first, if has_next_page value is true
-    const userPostsNextPage = await ig.fetchUserPostsV2('ketoprak_jowo', userPosts.page_info.end_cursor);
+    const userPostsNextPage = await ig.fetchUserPostsV2('fiiyya21', userPosts?.xdt_api__v1__feed__user_timeline_graphql_connection?.page_info?.end_cursor);
     console.log(userPostsNextPage);
 
     // fetch Stories
-    const stories = await ig.fetchStories('novia.mawa');
+    const stories = await ig.fetchStories('fiiyya21');
     console.log(stories);
 
     // fetch highlights
-    const highlight = await ig.fetchHighlights('novia.mawa');
+    const highlight = await ig.fetchHighlights('fiiyya21');
     console.log(highlight);
 
     // fetch user info
-    const user = await ig.fetchUser('novia.mawa');
+    const user = await ig.fetchUser('fiiyya21');
     console.log(user);
 
-    // also you can use fetchUserV2 version, basically this is same as /?__a=1
-    const userV2 = await ig.fetchUserV2('novia.mawa');
+    // also you can use fetchUserV2 version, basically this is same as formerly /?__a=1
+    const userV2 = await ig.fetchUserV2('fiiyya21');
     console.log(userV2);
 
     // ig url can be extracted , you can use shortcodeFormatter
