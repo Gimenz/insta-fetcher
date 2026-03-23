@@ -1,13 +1,13 @@
 /* Muhamad Ristiyanto _ https://github.com/Gimenz
  * Created, Published at Selasa, 9 Maret 2021
- * Modified, Updated at Minggu, 20 Februari 2022
+ * Modified, Updated at Minggu, 19 Januari 2025
  */
 
 import fs from 'fs'
 import FormData from 'form-data';
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { bufferToStream, getPostType, parseCookie, randInt, shortcodeFormatter } from './utils/index';
-import { username, userId, seachTerm, url, IgCookie, ProductType, MediaType, IChangedProfilePicture, ISearchFollow, IGPostMetadata, PostGraphQL } from './types';
+import { username, userId, seachTerm, url, IgCookie, ProductType, MediaType, IChangedProfilePicture, ISearchFollow, IGPostMetadata, PostGraphQL, UserFollow } from './types';
 import { IGUserMetadata, UserGraphQL } from './types/UserMetadata';
 import { IGStoriesMetadata, ItemStories, StoriesGraphQL } from './types/StoriesMetadata';
 import { highlight_ids_query, highlight_media_query, post_shortcode_query } from './helper/query';
@@ -26,6 +26,8 @@ import { ProfileReel } from './types/UserReel';
 export * from './utils'
 export * as InstagramMetadata from './types'
 export * from './helper/Session';
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 export class igApi {
 	/**
 	 * Recommended to set cookie for most all IG Request
@@ -94,7 +96,7 @@ export class igApi {
 	public searchFollower = async (userId: userId, seachTerm: seachTerm): Promise<ISearchFollow> => {
 		const res = await this.FetchIGAPI(
 			config.instagram_api_v1,
-			`/friendships/${userId}/followers/?count=12&query=${seachTerm}&search_surface=follow_list_page`,
+			`/friendships/${userId}/followers/?count=50&query=${seachTerm}&search_surface=follow_list_page`,
 			config.iPhone,
 		);
 		return res?.data || res
@@ -108,6 +110,124 @@ export class igApi {
 		);
 		return res?.data || res
 	}
+
+	public getAllFollowers = async (userId: string, searchTerm: string = ""): Promise<ISearchFollow> => {
+		let followers: UserFollow[] = [];
+		let nextMaxId: string | undefined = undefined;
+
+		do {
+			const res = await this.FetchIGAPI(
+				config.instagram_api_v1,
+				`/friendships/${userId}/followers/`,
+				config.iPhone,
+				{
+					params: {
+						count: 12, // Adjust `count` to the maximum allowed by Instagram
+						query: searchTerm,
+						max_id: nextMaxId, // Pagination parameter
+						search_surface: "follow_list_page",
+					},
+				}
+			);
+
+			const data: ISearchFollow = res?.data || res;
+			followers.push(...(data.users || []));
+			nextMaxId = data.next_max_id; // Update nextMaxId for the next page
+			await sleep(2000);
+		} while (nextMaxId);
+
+		return { users: followers, status: "success" };
+	};
+
+	public getAllFollowing = async (userId: string, searchTerm: string = ""): Promise<ISearchFollow> => {
+		let following: UserFollow[] = [];
+		let nextMaxId: string | undefined = undefined;
+
+		do {
+			const res = await this.FetchIGAPI(
+				config.instagram_api_v1,
+				`/friendships/${userId}/following/`,
+				config.iPhone,
+				{
+					params: {
+						count: 12, // Adjust `count` to the maximum allowed by Instagram
+						query: searchTerm,
+						max_id: nextMaxId, // Pagination parameter
+					},
+				}
+			);
+
+			const data: ISearchFollow = res?.data || res;
+			following.push(...(data.users || []));
+			nextMaxId = data.next_max_id; // Update nextMaxId for the next page
+			await sleep(2000);
+		} while (nextMaxId);
+
+		return { users: following, status: "success" };
+	};
+
+	/*
+	*	add new for automate view stories & like stories
+	*	fitur dari Rizka Nugraha
+	*/
+
+	public getStories = async (): Promise<ItemStories[]> => {
+		try {
+			const res = await this.FetchIGAPI(
+				config.instagram_api_v1,
+				`/feed/reels_tray/`,
+				config.android
+			);
+			return res?.data?.tray || [];
+		} catch (error) {
+			console.error("Error fetching stories:", error);
+			return [];
+		}
+	};
+
+	public getStoryById = async (reelId: string): Promise<any> => {
+		const res = await this.FetchIGAPI(config.instagram_api_v1, `/feed/reels_media/?reel_ids=${reelId}`, config.android)
+		if (res && res.data && res.data.reels_media && res.data.reels_media.length > 0) {
+			return res.data.reels_media[0];
+		}
+	}
+
+	public viewStories = async (reelId: string, itemId: string): Promise<AxiosResponse | undefined> => {
+		try {
+			const res = await this.FetchIGAPI(
+				config.instagram_api_v2,
+				`/media/seen/`,
+				config.android,
+				{
+					data: {
+						reels: { [`${reelId}_${itemId}`]: [0] }, // Reel ID and timestamp
+						reel_media_id: itemId,
+						reel_author_id: reelId,
+						view_source: "feed_timeline",
+					},
+					method: "POST",
+				}
+			);
+			return res;
+		} catch (error) {
+			console.error("Error viewing story:", error);
+		}
+	};
+
+	public likeStories = async (mediaId: string): Promise<AxiosResponse | undefined> => {
+		try {
+			const res = await this.FetchIGAPI(
+				config.instagram_api_v1,
+				`/media/${mediaId}/like/`,
+				config.android,
+				{ method: "POST" }
+			);
+			return res;
+		} catch (error) {
+			console.error("Error liking story:", error);
+		}
+	};
+
 
 	private _formatSidecar = (data: IRawBody): Array<MediaUrls> => {
 		const gql = data.items[0]

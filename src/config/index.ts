@@ -4,6 +4,8 @@ export const config = {
 	instagram_base_z4: 'https://z-p4.www.instagram.com',
 	/** Instagram Api v1 */
 	instagram_api_v1: 'https://i.instagram.com/api/v1',
+	/** Instagram Api v2 */
+	instagram_api_v2: 'https://i.instagram.com/api/v2',
 	/** Instagram API Search User */
 	instagram_search_url: 'https://www.instagram.com/web/search/topsearch/?query=',
 	/** Android User-Agent */
